@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: maprank_backend
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:15
+    container_name: maprank_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=maprank
+      - POSTGRES_PASSWORD=maprank_pass
+      - POSTGRES_DB=maprank_db
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    container_name: maprank_redis
+    ports:
+      - "6379:6379"
+
+  worker:
+    build: ./backend
+    container_name: maprank_worker
+    command: celery -A app.workers.celery_app worker --loglevel=info
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - backend
+      - redis
+
+volumes:
+  postgres_data:
