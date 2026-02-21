@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, Request
+from fastapi import FastAPI, Depends, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -14,49 +14,56 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
-# Custom Logging Middleware to see every request in Railway Logs
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    start_time = time.time()
-    origin = request.headers.get("origin")
-    method = request.method
-    path = request.url.path
-    print(f"--- Incoming Request: {method} {path} | Origin: {origin} ---")
-    
-    try:
-        response = await call_next(request)
-        process_time = (time.time() - start_time) * 1000
-        print(f"--- Response: {response.status_code} | Time: {process_time:.2f}ms ---")
-        return response
-    except Exception as e:
-        print(f"--- ERROR in Request: {str(e)} ---")
-        print(traceback.format_exc())
-        raise e
-
-# Robust CORS Configuration
+# Robust CORS Configuration (Pure Wildcard)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "https://maprank-production-b0f1.up.railway.app",
-        "https://maprank-frontend.vercel.app",
-        "https://maprank.vercel.app", # Common Vercel pattern
-        "*" # Fallback for mobile/other origins
-    ],
-    allow_credentials=False, # Changed to False for maximal compatibility with "*"
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Custom Logging & Hardcoded CORS Header Middleware
+# This ensures even 422 or 500 errors get CORS headers
+@app.middleware("http")
+async def log_and_cors_headers(request: Request, call_next):
+    start_time = time.time()
+    origin = request.headers.get("origin")
+    
+    # Handle preflight (OPTIONS) manually if needed, or just let it pass
+    if request.method == "OPTIONS":
+        response = Response()
+    else:
+        try:
+            response = await call_next(request)
+        except Exception as e:
+            print(f"--- SERVER ERROR: {str(e)} ---")
+            print(traceback.format_exc())
+            # Return a JSON error but with CORS headers
+            from fastapi.responses import JSONResponse
+            response = JSONResponse(
+                status_code=500,
+                content={"detail": "Internal Server Error", "error": str(e)}
+            )
+    
+    # Force CORS headers on EVERY response
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    
+    process_time = (time.time() - start_time) * 1000
+    print(f"[{request.method}] {request.url.path} - {response.status_code} ({process_time:.2f}ms) | Origin: {origin}")
+    
+    return response
+
 @app.get("/")
 def root():
-    return {"message": "MapRank API is alive", "version": "v4"}
+    return {"message": "MapRank API is alive", "version": "v5"}
 
 @app.get("/health")
 @app.get("/api/v1/health")
 def health_check():
-    return {"status": "ok", "version": "v4", "cors": "robust"}
+    return {"status": "ok", "version": "v5", "cors": "manual_injection"}
 
 @app.get("/health/db")
 def health_db_check(db: Session = Depends(get_db)):
@@ -65,13 +72,12 @@ def health_db_check(db: Session = Depends(get_db)):
         return {"status": "ok", "db": "connected"}
     except Exception as e:
         print(f"DB Health Check Failed: {str(e)}")
-        return {"status": "error", "db": str(e), "note": "Check Railway DB variables"}
+        return {"status": "error", "db": str(e)}
 
-# Include the main router
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 # Catch-all for debugging 404s
 @app.api_route("/{path_name:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 async def catch_all(request: Request, path_name: str):
     print(f"!!! Catch-all triggered for: {path_name} !!!")
-    return {"error": "Not Found", "requested_path": path_name, "version": "v4"}
+    return {"error": "Path Not Found", "requested_path": path_name, "version": "v5"}
