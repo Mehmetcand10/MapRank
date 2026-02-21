@@ -53,8 +53,12 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
                 window.location.href = '/dashboard'
             }
         } catch (error: any) {
-            console.error(error)
-            alert(error.response?.data?.detail || error.message || "An error occurred.")
+            console.error("Auth Error Details:", error.response?.data)
+            const detail = error.response?.data?.detail
+            const errorMessage = typeof detail === 'string'
+                ? detail
+                : (Array.isArray(detail) ? JSON.stringify(detail) : (error.message || "An error occurred."))
+            alert(errorMessage)
         } finally {
             setIsLoading(false)
         }
