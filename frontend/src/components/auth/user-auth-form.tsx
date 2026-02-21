@@ -44,6 +44,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
                 const params = new URLSearchParams()
                 params.append('username', email)
                 params.append('password', password)
+                params.append('grant_type', 'password')
 
                 const response = await api.post("/auth/login/access-token", params)
 
