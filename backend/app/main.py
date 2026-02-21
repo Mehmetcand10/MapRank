@@ -9,12 +9,23 @@ app = FastAPI(
 )
 
 # Set all CORS enabled origins
+# If we want to allow credentials, we cannot use "*"
+# We will allow localhost and common production origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://maprank-production-b0f1.up.railway.app",
+        "https://maprank-frontend.vercel.app", # Placeholder for user's potential Vercel domain
+    ],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
