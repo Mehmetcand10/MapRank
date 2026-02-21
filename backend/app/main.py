@@ -64,6 +64,19 @@ def health_db_check(db: Session = Depends(get_db)):
             content={"status": "error", "db": str(e), "version": "v6"}
         )
 
+@app.get("/health/tables")
+def health_tables_check(db: Session = Depends(get_db)):
+    try:
+        # Use a list to store table names
+        table_names = db.execute(text("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'")).fetchall()
+        return {"status": "ok", "tables": [t[0] for t in table_names], "version": "v6"}
+    except Exception as e:
+        logger.error(f"Tables Check Failed: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "error": str(e), "version": "v6"}
+        )
+
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 # Simple catch-all for debugging

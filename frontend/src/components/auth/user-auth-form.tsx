@@ -55,10 +55,27 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
             }
         } catch (error: any) {
             console.error("Auth Error Details:", error.response?.data)
-            const detail = error.response?.data?.detail
-            const errorMessage = typeof detail === 'string'
-                ? detail
-                : (Array.isArray(detail) ? JSON.stringify(detail) : (error.message || "An error occurred."))
+            let errorMessage = "An error occurred."
+
+            if (error.response?.data) {
+                const data = error.response.data
+                if (data.message) {
+                    // Show our custom v6 message if it exists
+                    errorMessage = `${data.detail || 'Error'}: ${data.message}`
+                } else if (data.detail) {
+                    const detail = data.detail
+                    if (typeof detail === 'string') {
+                        errorMessage = detail
+                    } else if (Array.isArray(detail)) {
+                        errorMessage = detail.map((err: any) => `${err.loc.join('.')}: ${err.msg}`).join(', ')
+                    } else {
+                        errorMessage = JSON.stringify(detail)
+                    }
+                }
+            } else if (error.message) {
+                errorMessage = error.message
+            }
+
             alert(errorMessage)
         } finally {
             setIsLoading(false)
