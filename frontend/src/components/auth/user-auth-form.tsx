@@ -29,7 +29,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
         const email = target.email.value
         const password = target.password.value
 
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api/v1'
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://maprank-production-b0f1.up.railway.app/api/v1'
         try {
             if (type === "register") {
                 const response = await fetch(`${apiUrl}/auth/register`, {
