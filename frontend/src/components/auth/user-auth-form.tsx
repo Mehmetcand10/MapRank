@@ -59,73 +59,72 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
             setIsLoading(false)
         }
     }
-}
 
-return (
-    <div className={cn("grid gap-6", className)} {...props}>
-        <form onSubmit={onSubmit}>
-            <div className="grid gap-4">
-                <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                        id="email"
-                        placeholder="name@example.com"
-                        type="email"
-                        name="email"
-                        autoCapitalize="none"
-                        autoComplete="email"
-                        autoCorrect="off"
-                        disabled={isLoading}
-                    />
-                </div>
-                {type === "register" && (
+    return (
+        <div className={cn("grid gap-6", className)} {...props}>
+            <form onSubmit={onSubmit}>
+                <div className="grid gap-4">
                     <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="email">Email</Label>
                         <Input
-                            id="password"
-                            type="password"
-                            name="password"
+                            id="email"
+                            placeholder="name@example.com"
+                            type="email"
+                            name="email"
+                            autoCapitalize="none"
+                            autoComplete="email"
+                            autoCorrect="off"
                             disabled={isLoading}
                         />
                     </div>
-                )}
-                {type === "login" && (
-                    <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
-                        <Input
-                            id="password"
-                            type="password"
-                            name="password"
-                            disabled={isLoading}
-                        />
-                    </div>
-                )}
-                <Button disabled={isLoading}>
-                    {isLoading && (
-                        <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                    {type === "register" && (
+                        <div className="grid gap-2">
+                            <Label htmlFor="password">Password</Label>
+                            <Input
+                                id="password"
+                                type="password"
+                                name="password"
+                                disabled={isLoading}
+                            />
+                        </div>
                     )}
-                    {type === "login" ? "Sign In" : "Create Account"}
-                </Button>
+                    {type === "login" && (
+                        <div className="grid gap-2">
+                            <Label htmlFor="password">Password</Label>
+                            <Input
+                                id="password"
+                                type="password"
+                                name="password"
+                                disabled={isLoading}
+                            />
+                        </div>
+                    )}
+                    <Button disabled={isLoading}>
+                        {isLoading && (
+                            <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                        )}
+                        {type === "login" ? "Sign In" : "Create Account"}
+                    </Button>
+                </div>
+            </form>
+            <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white px-2 text-gray-500">
+                        Or continue with
+                    </span>
+                </div>
             </div>
-        </form>
-        <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-gray-500">
-                    Or continue with
-                </span>
-            </div>
+            <Button variant="outline" type="button" disabled={isLoading}>
+                {isLoading ? (
+                    <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                    <Icons.google className="mr-2 h-4 w-4" />
+                )}{" "}
+                Google
+            </Button>
         </div>
-        <Button variant="outline" type="button" disabled={isLoading}>
-            {isLoading ? (
-                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-                <Icons.google className="mr-2 h-4 w-4" />
-            )}{" "}
-            Google
-        </Button>
-    </div>
-)
+    )
 }
