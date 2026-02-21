@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 import traceback
 import logging
+import time
 
 from app.core.config import settings
 from app.api.v1.api import api_router
@@ -19,7 +20,7 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
-# Standard CORS Middleware - Most reliable
+# Standard CORS Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,61 +29,84 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global Exception Handler
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    logger.error(f"Global Exception: {str(exc)}")
-    logger.error(traceback.format_exc())
-    return JSONResponse(
-        status_code=500,
-        content={
-            "detail": "Internal Server Error",
-            "message": str(exc),
-            "traceback": traceback.format_exc().splitlines()[-3:], # Last bits of trace
-            "version": "v6"
-        }
-    )
+# Middleware for Logging and CORS Failsafe
+@app.middleware("http")
+async def log_and_cors_failsafe(request: Request, call_next):
+    start_time = time.time()
+    try:
+        response = await call_next(request)
+    except Exception as e:
+        logger.error(f"Uncaught MiddleWare Exception: {str(e)}")
+        logger.error(traceback.format_exc())
+        response = JSONResponse(
+            status_code=500,
+            content={
+                "detail": "Internal Server Error in Middleware",
+                "message": str(e),
+                "version": "v7"
+            }
+        )
+    
+    # Failsafe CORS headers
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    
+    process_time = (time.time() - start_time) * 1000
+    logger.info(f"[{request.method}] {request.url.path} - {response.status_code} ({process_time:.2f}ms)")
+    return response
 
 @app.get("/")
 def root():
-    return {"message": "MapRank API is alive", "version": "v6"}
+    return {"message": "MapRank API is alive", "version": "v7"}
 
-@app.get("/health")
-@app.get("/api/v1/health")
-def health_check():
-    return {"status": "ok", "version": "v6"}
+@app.get("/health/v7")
+def health_v7():
+    return {"status": "ok", "version": "v7"}
 
 @app.get("/health/db")
 def health_db_check(db: Session = Depends(get_db)):
     try:
         db.execute(text("SELECT 1"))
-        return {"status": "ok", "db": "connected", "version": "v6"}
+        return {"status": "ok", "db": "connected", "version": "v7"}
     except Exception as e:
         logger.error(f"DB Health Check Failed: {str(e)}")
         return JSONResponse(
             status_code=500,
-            content={"status": "error", "db": str(e), "version": "v6"}
+            content={"status": "error", "db": str(e), "version": "v7"}
         )
 
 @app.get("/health/tables")
 def health_tables_check(db: Session = Depends(get_db)):
     try:
-        # Use a list to store table names
-        table_names = db.execute(text("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'")).fetchall()
-        return {"status": "ok", "tables": [t[0] for t in table_names], "version": "v6"}
+        result = db.execute(text("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public'"))
+        tables = [row[0] for row in result.fetchall()]
+        return {"status": "ok", "tables": tables, "version": "v7"}
     except Exception as e:
         logger.error(f"Tables Check Failed: {str(e)}")
         return JSONResponse(
             status_code=500,
-            content={"status": "error", "error": str(e), "version": "v6"}
+            content={"status": "error", "error": str(e), "version": "v7"}
         )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
-# Simple catch-all for debugging
+# Global Exception Handler (redundancy)
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Global Exception Handler: {str(exc)}")
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "Internal Server Error",
+            "message": str(exc),
+            "version": "v7"
+        }
+    )
+
 @app.api_route("/{path_name:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 async def catch_all(request: Request, path_name: str):
     return JSONResponse(
         status_code=404,
-        content={"error": "Not Found", "requested_path": path_name, "version": "v6"}
+        content={"error": "Not Found", "requested_path": path_name, "version": "v7"}
     )
