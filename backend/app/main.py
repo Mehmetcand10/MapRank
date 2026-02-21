@@ -8,6 +8,8 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
+print("--- MAPRANK API STARTING ---")
+
 # Set all CORS enabled origins
 # If we want to allow credentials, we cannot use "*"
 # We will allow localhost and common production origins
@@ -25,7 +27,8 @@ app.add_middleware(
 )
 
 @app.get("/health")
+@app.get("/api/v1/health")
 def health_check():
-    return {"status": "ok"}
+    return {"status": "ok", "version": "v2"}
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
