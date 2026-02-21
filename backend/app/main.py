@@ -1,7 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+from sqlalchemy import text
 from app.core.config import settings
 from app.api.v1.api import api_router
+from app.core.database import get_db
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -10,18 +13,11 @@ app = FastAPI(
 
 print("--- MAPRANK API STARTING ---")
 
-# Set all CORS enabled origins
-# If we want to allow credentials, we cannot use "*"
-# We will allow localhost and common production origins
+# PERMISSIVE CORS: Allow everything since we use localStorage + Authorization headers
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "https://maprank-production-b0f1.up.railway.app",
-        "https://maprank-frontend.vercel.app", # Placeholder for user's potential Vercel domain
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -29,6 +25,14 @@ app.add_middleware(
 @app.get("/health")
 @app.get("/api/v1/health")
 def health_check():
-    return {"status": "ok", "version": "v2"}
+    return {"status": "ok", "version": "v3", "cors": "permissive"}
+
+@app.get("/health/db")
+def health_db_check(db: Session = Depends(get_db)):
+    try:
+        db.execute(text("SELECT 1"))
+        return {"status": "ok", "db": "connected"}
+    except Exception as e:
+        return {"status": "error", "db": str(e)}
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
