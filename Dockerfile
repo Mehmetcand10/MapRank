@@ -21,7 +21,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy backend code
 COPY backend/ .
 
-# Expose port (Railway sets PORT env var)
-# Railway default is often 8080 or the PORT env var. 
-# We'll use the variable but provide a default.
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
+# Expose port (Railway sets PORT env var, default 8080)
+EXPOSE 8080
+
+# Use shell form for variable expansion
+CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}
