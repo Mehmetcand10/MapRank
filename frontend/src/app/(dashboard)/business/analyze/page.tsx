@@ -81,7 +81,7 @@ function AnalyzeContent() {
     const params = useParams()
     const searchParams = useSearchParams()
     const router = useRouter()
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(!!placeId)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [data, setData] = useState<AnalysisResult | null>(null)
@@ -111,7 +111,10 @@ function AnalyzeContent() {
     }
 
     useEffect(() => {
-        if (!placeId) return
+        if (!placeId) {
+            setLoading(false)
+            return
+        }
 
         const fetchData = async () => {
             setLoading(true) // Ensure it starts loading
