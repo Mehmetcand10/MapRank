@@ -73,8 +73,11 @@ def create_business(
     """
     Create/Save a business to the user's tenant.
     """
+    print(f"DEBUG: User {current_user.email} (Role: {current_user.role}, Tenant: {current_user.tenant_id}) attempting to add business {business_in.google_place_id}")
+    
     if current_user.role != "OWNER":
-        raise HTTPException(status_code=400, detail="Only owners can add businesses")
+        print(f"DEBUG: Access denied. User is {current_user.role}, not OWNER")
+        raise HTTPException(status_code=400, detail=f"Only owners can add businesses. Your role: {current_user.role}")
 
     # Check if business already exists for this tenant
     existing_business = db.query(models.Business).filter(
@@ -83,18 +86,23 @@ def create_business(
     ).first()
     
     if existing_business:
+        print("DEBUG: Business already exists for this tenant.")
         raise HTTPException(status_code=400, detail="Business already exists in this tenant")
         
     # Fetch details to populate fields
+    print(f"DEBUG: Fetching details for {business_in.google_place_id}")
     details = google_maps_service.get_place_details(business_in.google_place_id)
     if not details:
+        print("DEBUG: Google Maps details not found.")
         raise HTTPException(status_code=404, detail="Business not found on Google Maps")
         
     # Run initial analysis to get score/ranking
+    print("DEBUG: Running analysis...")
     analysis = ranking_engine.analyze_business(details)
     
     try:
         # Create Business instance
+        print("DEBUG: Creating Business instance...")
         db_business = models.Business(
             google_place_id=business_in.google_place_id,
             name=details.get("name", business_in.name),
@@ -104,25 +112,30 @@ def create_business(
             tenant_id=current_user.tenant_id
         )
         db.add(db_business)
-        db.commit()
-        db.refresh(db_business)
+        db.flush() # Flush to get ID
         
         # Create initial Ranking snapshot
+        print("DEBUG: Creating Ranking instance...")
         db_ranking = models.Ranking(
             business_id=db_business.id,
             rank_position=analysis.get("metrics", {}).get("rank_position"), 
             score=analysis.get("score"),
             competitors_json=analysis.get("competitors"), 
-            snapshot_date=datetime.utcnow() # Force current time
+            snapshot_date=datetime.utcnow()
         )
         db.add(db_ranking)
         db.commit()
+        db.refresh(db_business)
         
+        print(f"DEBUG: Business {db_business.id} saved successfully.")
         return db_business
     except Exception as e:
-        print(f"Error saving business: {e}")
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"CRITICAL: Error saving business: {str(e)}")
+        print(error_trace)
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Save error: {str(e)}")
 
 @router.get("/", response_model=List[schemas.Business])
 def list_businesses(
