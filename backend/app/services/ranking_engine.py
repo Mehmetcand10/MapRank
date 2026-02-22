@@ -10,8 +10,8 @@ class RankingEngine:
         Calculates granular metrics for advanced scoring.
         Currently using heuristics and mock patterns based on accessible data.
         """
-        rating = business_data.get("rating", 0.0)
-        review_count = business_data.get("user_ratings_total", 0)
+        rating = float(business_data.get("rating") or 0.0)
+        review_count = int(business_data.get("user_ratings_total") or 0)
         
         # Heuristic calculations for mock-up
         completeness = 0.0
@@ -126,12 +126,30 @@ class RankingEngine:
                 total_competitors = len(competitors)
                 avg_competitor_rating = sum(c.get("rating", 0) for c in competitors) / total_competitors
                 
-                # Competitor Keyword Analysis (Mocked)
-                competitor_keywords = [
-                    {"keyword": "uygun fiyat", "count": 12, "impact": "Yüksek"},
-                    {"keyword": "kaliteli hizmet", "count": 9, "impact": "Orta"},
-                    {"keyword": "hızlı teslimat", "count": 7, "impact": "Düşük"}
-                ]
+                # EXTRACT ACTUAL KEYWORDS FROM GOOGLE REVIEWS (User Request: "vgoogleden tam gelsın")
+                raw_reviews = business_data.get("reviews", [])
+                extracted_keywords = {}
+                common_terms = {"ve", "bir", "bu", "da", "de", "çok", "için", "olan", "the", "and", "is", "was", "for", "with"}
+                
+                for review in raw_reviews:
+                    text = review.get("text", "").lower()
+                    words = [w.strip(".,!?") for w in text.split() if len(w) > 3 and w not in common_terms]
+                    for w in words:
+                        extracted_keywords[w] = extracted_keywords.get(w, 0) + 1
+                
+                if extracted_keywords:
+                    # Sort by count and take top 5
+                    sorted_keywords = sorted(extracted_keywords.items(), key=lambda x: x[1], reverse=True)[:5]
+                    competitor_keywords = [
+                        {"keyword": k, "count": c, "impact": "Önemli" if c > 2 else "Normal"} 
+                        for k, c in sorted_keywords
+                    ]
+                else:
+                    # Fallback to sector specific keywords if no reviews
+                    competitor_keywords = [
+                        {"keyword": "kalite", "count": 1, "impact": "Normal"},
+                        {"keyword": "hizmet", "count": 1, "impact": "Normal"}
+                    ]
         
         benchmarks = {
             "avg_rating": round(avg_competitor_rating or 4.2, 1),

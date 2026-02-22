@@ -134,6 +134,16 @@ def health_migrate(db: Session = Depends(get_db)):
             content={"status": "error", "message": str(e), "version": APP_VERSION}
         )
 
+@app.on_event("startup")
+def startup_event():
+    # Automatically sync DB on startup
+    from app.core.database import SessionLocal
+    db = SessionLocal()
+    try:
+        health_migrate(db)
+    finally:
+        db.close()
+
 @app.get("/health/test-hash")
 def test_hash(pw: str = "test_password_with_long_string"):
     from app.core.security import get_password_hash

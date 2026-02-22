@@ -195,13 +195,16 @@ def list_businesses(
         models.Business.tenant_id == current_user.tenant_id
     ).offset(skip).limit(limit).all()
     
-    # Populate latest_ranking
+    # Populate latest_ranking efficiently and safely
     for business in businesses:
         try:
-            if business.rankings:
-                # Sort by snapshot_date desc
-                latest = sorted(business.rankings, key=lambda x: x.snapshot_date, reverse=True)[0]
-                business.latest_ranking = latest
+            # Get latest ranking directly from DB to avoid loading all into memory 
+            # and to handle potential snapshot_date issues
+            latest = db.query(models.Ranking).filter(
+                models.Ranking.business_id == business.id
+            ).order_by(models.Ranking.snapshot_date.desc()).first()
+            
+            business.latest_ranking = latest
         except Exception as e:
             import logging
             logging.error(f"Error populating ranking for business {business.id}: {str(e)}")
