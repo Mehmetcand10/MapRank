@@ -64,7 +64,7 @@ def analyze_business_endpoint(
     
     return analysis
 
-@router.post("/", response_model=schemas.Business)
+@router.post("", response_model=schemas.Business)
 def create_business(
     business_in: schemas.BusinessCreate,
     db: Session = Depends(deps.get_db),
@@ -137,7 +137,7 @@ def create_business(
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Save error: {str(e)}")
 
-@router.get("/", response_model=List[schemas.Business])
+@router.get("", response_model=List[schemas.Business])
 def list_businesses(
     skip: int = 0,
     limit: int = 100,
