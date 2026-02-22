@@ -70,7 +70,7 @@ class RankingEngine:
         
         return round(final_score, 1)
 
-    def analyze_business(self, business_data: Dict[str, Any]) -> Dict[str, Any]:
+    def analyze_business(self, business_data: Dict[str, Any], is_my_business: bool = False) -> Dict[str, Any]:
         """
         Analyzes a business with advanced ENTERPRISE metrics.
         """
@@ -85,17 +85,35 @@ class RankingEngine:
         recommendations = []
         
         # Logic for recommendations
-        if adv_metrics["owner_response_rate"] < 70:
-            recommendations.append({
-                "type": "critical",
-                "message": f"Yanıt oranınız çok düşük (%{adv_metrics['owner_response_rate']}). Müşterilere mutlaka yanıt verin."
-            })
+        if is_my_business:
+            if adv_metrics["owner_response_rate"] < 70:
+                recommendations.append({
+                    "type": "critical",
+                    "message": f"Yanıt oranınız çok düşük (%{adv_metrics['owner_response_rate']}). Müşterilere mutlaka yanıt verin."
+                })
+            if adv_metrics["profile_completeness_percent"] < 100:
+                recommendations.append({
+                    "type": "warning",
+                    "message": "Profiliniz tam değil. Eksik bilgileri (çalışma saatleri vb.) Google'da tamamlayın."
+                })
+        else:
+            # Competitor Attack Strategy Logic
+            if adv_metrics["owner_response_rate"] > 80:
+                recommendations.append({
+                    "type": "warning",
+                    "message": f"Bu işletme yorumlara çok hızlı yanıt veriyor (%{adv_metrics['owner_response_rate']}). Onu geçmek için 24 saat kuralına uyun."
+                })
+            else:
+                recommendations.append({
+                    "type": "suggestion",
+                    "message": f"Bu rakibin yanıt oranı zayıf (%{adv_metrics['owner_response_rate']}). Yorumlara ondan daha hızlı yanıt vererek puanınızı yükseltebilirsiniz."
+                })
             
-        if adv_metrics["profile_completeness_percent"] < 100:
-            recommendations.append({
-                "type": "warning",
-                "message": "Profiliniz tam değil. Eksik bilgileri (çalışma saatleri vb.) Google'da tamamlayın."
-            })
+            if rating > 4.5:
+                recommendations.append({
+                    "type": "critical",
+                    "message": f"Rakibiniz {rating} puan ile çok güçlü. Onu geçmek için 'Yorum Hızınızı' (Velocity) artırmalısınız."
+                })
 
         # Competitor Analysis
         location = business_data.get("geometry", {}).get("location")
@@ -200,7 +218,7 @@ class RankingEngine:
             },
             "targets": {"rating": TARGET_RATING, "review_count": TARGET_REVIEWS},
             "recommendations": recommendations,
-            "analysis_text": self._generate_summary(score, recommendations),
+            "analysis_text": self._generate_summary(score, recommendations, is_my_business),
             "formatted_address": business_data.get("formatted_address"),
             "formatted_phone_number": business_data.get("formatted_phone_number"),
             "website": business_data.get("website"),
@@ -242,9 +260,14 @@ class RankingEngine:
         ]
         return hacks[:4]
 
-    def _generate_summary(self, score: float, recommendations: list) -> str:
-        if score >= 85: return "Harika iş! İşletmeniz bölgenin en iyileri arasında."
-        if score >= 60: return "İyi bir yoldasınız ancak zirve için atmanız gereken adımlar var."
-        return "İşletmenizin dijital varlığı zayıf görünüyor. Acil müdahale gerekli."
+    def _generate_summary(self, score: float, recommendations: list, is_my_business: bool = False) -> str:
+        if is_my_business:
+            if score >= 85: return "Harika iş! İşletmeniz bölgenin en iyileri arasında."
+            if score >= 60: return "İyi bir yoldasınız ancak zirve için atmanız gereken adımlar var."
+            return "İşletmenizin dijital varlığı zayıf görünüyor. Acil müdahale gerekli."
+        else:
+            if score >= 85: return f"Bu rakip çok dişli ({score}/100). Onu geçmek için kusursuz bir Google optimizasyonu lazım."
+            if score >= 60: return "Bu işletmeyi doğru hamlelerle (hızlı yanıt, yeni fotolar) geçmeniz çok orta vadede mümkün."
+            return "Bu zayıf bir rakip. Basit optimizasyonlarla onu sıralamada kolayca geride bırakabilirsiniz."
 
 ranking_engine = RankingEngine()
