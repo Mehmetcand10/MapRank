@@ -116,7 +116,7 @@ function AnalyzeContent() {
         const fetchData = async () => {
             setLoading(true) // Ensure it starts loading
             try {
-                const response = await api.get<AnalysisResult>(`/businesses/analyze?place_id=${placeId}`)
+                const response = await api.get<AnalysisResult>(`/businesses/analyze?place_id=${encodeURIComponent(placeId)}`)
                 setData(response.data)
             } catch (err: any) {
                 console.error("Analysis failed", err)
