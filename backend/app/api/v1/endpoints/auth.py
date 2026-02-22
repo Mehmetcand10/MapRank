@@ -35,6 +35,7 @@ def register(
     db: Session = Depends(get_db),
     user_in: schemas.UserCreate,
 ) -> Any:
+    print(f"DEBUG: Registering user {user_in.email} | Password length: {len(user_in.password)}")
     user = UserService().get_by_email(db, email=user_in.email)
     if user:
         raise HTTPException(

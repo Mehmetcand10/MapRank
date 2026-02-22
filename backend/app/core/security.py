@@ -21,8 +21,14 @@ def create_access_token(
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+import hashlib
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    # Pre-hash to handle passwords > 72 chars
+    pw_hash = hashlib.sha256(plain_password.encode()).hexdigest()
+    return pwd_context.verify(pw_hash, hashed_password)
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    # Pre-hash to handle passwords > 72 chars
+    pw_hash = hashlib.sha256(password.encode()).hexdigest()
+    return pwd_context.hash(pw_hash)
