@@ -65,14 +65,16 @@ def analyze_business_endpoint(
             logging.error(f"GOOGLE DATA ERROR: Could not find details for {place_id}")
             raise HTTPException(status_code=404, detail=f"Google Maps records for this business ({place_id}) could not be retrieved.")
             
-        # 2. Run Analysis
-        analysis = ranking_engine.analyze_business(details)
-        
-        # 3. Check if business is already tracked by this user/tenant
+        # 2. Check if business is already tracked by this user/tenant
         exists = db.query(models.Business).filter(
             models.Business.google_place_id == place_id,
             models.Business.tenant_id == current_user.tenant_id
         ).first()
+        
+        is_my_business = exists.is_my_business if exists else False
+        
+        # 3. Run Analysis with contextual perspective
+        analysis = ranking_engine.analyze_business(details, is_my_business=is_my_business)
         
         if exists:
             analysis["is_tracked"] = True
