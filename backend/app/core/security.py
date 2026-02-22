@@ -29,6 +29,8 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(pw_hash, hashed_password)
 
 def get_password_hash(password: str) -> str:
-    # Pre-hash to handle passwords > 72 chars
+    # Pre-hash to handle passwords > 72 chars (bcrypt limit)
+    # The output is 64 hex characters, which is well within 72 bytes.
+    print(f"DEBUG_SECURITY: Hashing password of length {len(password)}")
     pw_hash = hashlib.sha256(password.encode()).hexdigest()
     return pwd_context.hash(pw_hash)

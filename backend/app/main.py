@@ -44,7 +44,7 @@ async def log_and_cors_failsafe(request: Request, call_next):
             content={
                 "detail": "Internal Server Error in Middleware",
                 "message": str(e),
-                "version": "v7"
+                "version": "v9"
             }
         )
     
@@ -59,22 +59,22 @@ async def log_and_cors_failsafe(request: Request, call_next):
 
 @app.get("/")
 def root():
-    return {"message": "MapRank API is alive", "version": "v7"}
+    return {"message": "MapRank API is alive", "version": "v9"}
 
 @app.get("/health/v7")
 def health_v7():
-    return {"status": "ok", "version": "v7"}
+    return {"status": "ok", "version": "v9"}
 
 @app.get("/health/db")
 def health_db_check(db: Session = Depends(get_db)):
     try:
         db.execute(text("SELECT 1"))
-        return {"status": "ok", "db": "connected", "version": "v7"}
+        return {"status": "ok", "db": "connected", "version": "v9"}
     except Exception as e:
         logger.error(f"DB Health Check Failed: {str(e)}")
         return JSONResponse(
             status_code=500,
-            content={"status": "error", "db": str(e), "version": "v7"}
+            content={"status": "error", "db": str(e), "version": "v9"}
         )
 
 @app.get("/health/tables")
@@ -82,12 +82,12 @@ def health_tables_check(db: Session = Depends(get_db)):
     try:
         result = db.execute(text("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public'"))
         tables = [row[0] for row in result.fetchall()]
-        return {"status": "ok", "tables": tables, "version": "v7"}
+        return {"status": "ok", "tables": tables, "version": "v9"}
     except Exception as e:
         logger.error(f"Tables Check Failed: {str(e)}")
         return JSONResponse(
             status_code=500,
-            content={"status": "error", "error": str(e), "version": "v7"}
+            content={"status": "error", "error": str(e), "version": "v9"}
         )
 
 @app.get("/health/migrate")
@@ -105,13 +105,13 @@ def health_migrate():
             "message": "Database tables created successfully", 
             "tables_in_metadata": list(Base.metadata.tables.keys()),
             "table_count": table_count,
-            "version": "v8"
+            "version": "v9"
         }
     except Exception as e:
         logger.error(f"Migration Failed: {str(e)}")
         return JSONResponse(
             status_code=500,
-            content={"status": "error", "message": str(e), "version": "v8"}
+            content={"status": "error", "message": str(e), "version": "v9"}
         )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
@@ -125,7 +125,7 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={
             "detail": "Internal Server Error",
             "message": str(exc),
-            "version": "v7"
+            "version": "v9"
         }
     )
 
@@ -133,5 +133,5 @@ async def global_exception_handler(request: Request, exc: Exception):
 async def catch_all(request: Request, path_name: str):
     return JSONResponse(
         status_code=404,
-        content={"error": "Not Found", "requested_path": path_name, "version": "v7"}
+        content={"error": "Not Found", "requested_path": path_name, "version": "v9"}
     )
