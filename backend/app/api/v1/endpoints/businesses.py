@@ -25,7 +25,20 @@ def search_businesses(
     
     # Calculate initial scores for search results just for preview
     for result in results:
-        result["maprank_score"] = ranking_engine.calculate_score(result)
+        try:
+            # Map search result fields to the names expected by calculation engine
+            compat_data = {
+                "rating": result.get("rating", 0.0),
+                "user_ratings_total": result.get("user_ratings_total", 0),
+                "formatted_address": result.get("address"), # Map engine expects formatted_address
+                "geometry": {"location": result.get("geometry")}
+            }
+            adv_metrics = ranking_engine.calculate_advanced_metrics(compat_data)
+            result["maprank_score"] = ranking_engine.calculate_score(compat_data, adv_metrics)
+        except Exception as e:
+            import logging
+            logging.error(f"Error calculating score for search result: {str(e)}")
+            result["maprank_score"] = 0.0
         
     return results
 

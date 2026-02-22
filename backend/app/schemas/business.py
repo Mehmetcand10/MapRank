@@ -20,6 +20,7 @@ class BusinessSearchResult(BaseModel):
     address: str
     rating: float
     user_ratings_total: int
+    maprank_score: Optional[float] = None
 
 class Ranking(BaseModel):
     id: int
