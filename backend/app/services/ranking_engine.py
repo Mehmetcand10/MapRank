@@ -112,7 +112,36 @@ class RankingEngine:
             competitors_raw = google_maps_service.search_nearby(location=location, keyword=keyword, type=selected_type)
             
             my_place_id = business_data.get("place_id") or business_data.get("google_place_id")
-            competitors = [c for c in competitors_raw if c.get("google_place_id") != my_place_id and c.get("name")]
+            my_types = set(business_data.get("types", []))
+            
+            # BROAD CATEGORIES to prevent industry mixing (e.g. Hotels vs Restaurants)
+            SECTORS = {
+                "food": {"restaurant", "food", "cafe", "bakery", "meal_takeaway", "meal_delivery", "bar"},
+                "lodging": {"lodging", "hotel", "hostel", "motel"},
+                "health": {"doctor", "dentist", "hospital", "clinic", "pharmacy"},
+                "automotive": {"car_repair", "car_dealer", "gas_station", "car_wash"},
+                "beauty": {"beauty_salon", "hair_care", "spa"}
+            }
+            
+            my_sectors = {s for s, tps in SECTORS.items() if my_types.intersection(tps)}
+            
+            competitors = []
+            for c in competitors_raw:
+                if c.get("google_place_id") == my_place_id:
+                    continue
+                
+                c_types = set(c.get("types", []))
+                
+                # Check for sector mismatch
+                is_mismatch = False
+                for sect, tps in SECTORS.items():
+                    # If competitor belongs to a sector that I don't, it's a mismatch
+                    if sect not in my_sectors and c_types.intersection(tps):
+                        is_mismatch = True
+                        break
+                
+                if not is_mismatch or not my_sectors:
+                    competitors.append(c)
             
             if competitors:
                 all_b = competitors + [{"name": business_data.get("name"), "rating": rating, "user_ratings_total": review_count, "is_me": True}]
