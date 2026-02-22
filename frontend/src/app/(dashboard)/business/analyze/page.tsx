@@ -56,6 +56,7 @@ interface AnalysisResult {
     competitors?: Competitor[]
     google_place_id?: string
     is_tracked?: boolean
+    is_my_business?: boolean
     business_types?: string[]
     // Premium Fields
     sentiment_trends?: { month: string, score: number }[]
@@ -148,18 +149,19 @@ function AnalyzeContent() {
             setLoading(true) // Ensure it starts loading
             try {
                 const response = await api.get<AnalysisResult>(`/businesses/analyze?place_id=${encodeURIComponent(placeId)}`)
-                setData(response.data)
+                const analysisData = response.data
+                setData(analysisData)
 
-                // Check if this business is already in our tracked list
-                try {
-                    const trackedResponse = await api.get("/businesses")
-                    const matchedBiz = (trackedResponse.data as any[]).find((b: any) => b.google_place_id === placeId)
-                    if (matchedBiz && matchedBiz.is_my_business) {
-                        setIsMyBusiness(true)
-                        setInternalId(matchedBiz.id)
+                if (analysisData.is_my_business) {
+                    setIsMyBusiness(true)
+                    // If it's a tracked business, find its internal ID for the Strategy Room link
+                    try {
+                        const trackedResponse = await api.get("/businesses")
+                        const matchedBiz = (trackedResponse.data as any[]).find((b: any) => b.google_place_id === placeId)
+                        if (matchedBiz) setInternalId(matchedBiz.id)
+                    } catch (e) {
+                        console.error("Tracking check failed", e)
                     }
-                } catch (e) {
-                    console.error("Tracking check failed", e)
                 }
             } catch (err: any) {
                 console.error("Analysis failed", err)
