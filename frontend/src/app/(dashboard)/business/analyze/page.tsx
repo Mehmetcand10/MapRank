@@ -2,6 +2,8 @@
 
 import { useEffect, useState, Suspense } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
+// PDF Generation
+const html2pdf = typeof window !== 'undefined' ? require('html2pdf.js') : null;
 import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -95,7 +97,20 @@ function AnalyzeContent() {
     const [searchLoading, setSearchLoading] = useState(false)
 
     const handleDownloadPDF = () => {
-        window.print()
+        if (!html2pdf || !data) return
+
+        const element = document.getElementById('premium-report-template')
+        if (!element) return
+
+        const opt = {
+            margin: 0.5,
+            filename: `${name || 'MapRank'}_Analiz_Raporu.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+
+        html2pdf().from(element).set(opt).save();
     }
 
     const handleSearch = async (e: React.FormEvent) => {

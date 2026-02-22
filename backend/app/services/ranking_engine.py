@@ -246,7 +246,13 @@ class RankingEngine:
                 {"month": "Mar", "score": score}
             ],
             "growth_hacks": self._generate_growth_hacks(business_data, recommendations, is_my_business),
-            "sector_benchmarks": benchmarks
+            "sector_benchmarks": benchmarks,
+            "strategic_insights": {
+                "market_position": "Bölgesel Lider" if score > 80 else "Yükselen Değer" if score > 50 else "Gelişmesi Gerekiyor",
+                "competitive_edge": "Yüksek Müşteri Sadakati" if rating > 4.5 else "Hızlı Yanıt Potansiyeli",
+                "investment_priority": "Yorum Hacmi" if review_count < 100 else "Görsel İçerik"
+            },
+            "growth_ideas": self._generate_industry_ideas(business_data.get("types", []))
         }
 
         return result
@@ -257,7 +263,13 @@ class RankingEngine:
                 "Google İşletme profilinize haftalık en az 3 fotoğraf ekleyin (Etkileşimi %35 artırır).",
                 "Müşteri yorumlarına ilk 24 saat içinde yanıt verin; algoritma hızı sever.",
                 "En popüler ürününüzü işletme açıklamasında stratejik olarak geçirin.",
-                "Bölgenizdeki rakiplerin yoğun olduğu saatlerde 'Google Post' paylaşarak öne çıkın."
+                "Bölgenizdeki rakiplerin yoğun olduğu saatlerde 'Google Post' paylaşarak öne çıkın.",
+                "Müşterilerinizden belirli anahtar kelimeleri (örn: 'lezzetli', 'hızlı') yorumlarında geçirmelerini rica edin.",
+                "Google Haritalar üzerinden gelen mesajlara 1 saat içinde dönerek 'Hızlı Yanıtlayıcı' rozeti kazanın.",
+                "Haftalık kampanya görselleri paylaşarak profilinizi 'Canlı' tutun.",
+                "Yorum yapan her müşteriye mutlaka ismiyle hitap ederek kişiselleştirilmiş yanıt verin.",
+                "İşletme kategorinizin altındaki tüm servis seçeneklerini (Paket servis, temassız vb.) işaretleyin.",
+                "Web sitenizdeki verilerle Google My Business verilerini (NAP - Name, Address, Phone) eşitleyin."
             ]
         else:
             # Strategies to BEAT this competitor
@@ -266,8 +278,47 @@ class RankingEngine:
                 f"{name} isimli rakibi geçmek için yorum sayınızı onların üzerine çıkarın.",
                 f"Bu rakibin en çok bahsedilen anahtar kelimelerini ({recs[1]['message'].split()[-1] if len(recs) > 1 else 'kalite'}) kendi açıklamanızda kullanın.",
                 "Rakipten daha güncel fotoğraflar yükleyerek Google'ın 'Yeni' algoritmasını tetikleyin.",
-                "Bu rakibe yorum yapan müşterilerin şikayet ettiği noktaları siz avantajınıza çevirin."
+                "Bu rakibe yorum yapan müşterilerin şikayet ettiği noktaları siz avantajınıza çevirin.",
+                "Rakibin zayıf olduğu 'Yanıt Hızı' alanında fark yaratarak müşterileri kendinize çekin.",
+                "Rakibin yoğun olduğu saatlerde yerel Google reklamı vererek onların önüne çıkın.",
+                "Rakiple benzer anahtar kelimelerde daha yüksek puanlı yorumlar biriktirin.",
+                "Rakibin profilindeki eksik ürün/hizmetleri kendi profilinizde öne çıkarın.",
+                "Bölgedeki yerel rehberlerden (Local Guides) yorum alarak otoritenizi rakibin üzerine taşıyın.",
+                "Rakibin 'Google Post' paylaşmadığı günlerde siz paylaşım yaparak güncel kalın."
             ]
+
+    def _generate_industry_ideas(self, types: list) -> list:
+        # Furniture Specific
+        if "furniture_store" in types or "home_goods_store" in types:
+            return [
+                "Müşterilerinizin evindeki mobilyaların yerleşimini görebileceği basit bir AR (Artırılmış Gerçeklik) filtresi oluşturun.",
+                "Eski mobilyaları yenileme (upcycling) atölyeleri düzenleyerek mağaza trafiğini artırın.",
+                "Mimarlar ve iç mimarlar için özel bir 'Sadakat Programı' başlatın; projelerinde sizin ürünlerinize yer versinler.",
+                "Kişiye özel ölçü ve tasarım hizmetini 'Ücretsiz Keşif' ile birleştirerek satış kapatma oranını artırın."
+            ]
+        # Restaurant/Cafe Specific
+        elif "restaurant" in types or "cafe" in types or "food" in types:
+            return [
+                "Menünüzdeki en popüler yemeğin 'Nasıl Yapılır' videosunu çekip Google Post'ta paylaşın (Gastronomi meraklılarını çeker).",
+                "Hafta içi öğle saatleri için 'Hızlı İş Menüsü' oluşturarak beyaz yakalı trafiğini domine edin.",
+                "Yemek kartları (Sodexo, Multinet vb.) ile yapılan harcamalara özel 'Tatlı İkramı' kampanyası başlatın.",
+                "Bölgenizdeki yerel etkinliklere (festival, konser) özel 'Take-away' paketleri tasarlayın."
+            ]
+        # Health/Beauty Specific
+        elif "health" in types or "beauty_salon" in types or "hair_care" in types:
+            return [
+                "Google Haritalar üzerinden yapılan her randevu için 'Ücretsiz Cilt Analizi' veya 'Ekstra Bakım' tanımlayın.",
+                "Müşterilerinizin 'Önce/Sonra' değişimlerini (izin alarak) yüksek kaliteli video olarak paylaşın.",
+                "Kendi markanıza ait bakım ürünlerini paket olarak satışa sunarak gelir modelinizi çeşitlendirin.",
+                "Yerel influencerlar ile 'Güzellik Günü' etkinlikleri yaparak yeni kitlelere ulaşın."
+            ]
+        # Default fallback
+        return [
+            "İşletmenizin önüne bir 'QR Kod' standı koyarak müşterilerin direkt Google yorum sayfasına yönlenmesini sağlayın.",
+            "Bölgenizdeki diğer (rakip olmayan) işletmelerle çapraz promosyon anlaşmaları yapın.",
+            "Sadık müşterilerinize 'Beni Öner' kampanyası ile yeni müşteri getirenlere indirim tanımlayın.",
+            "Sosyal medya mesajlarını otomatik yanıtlayan bir asistan kurarak müşteri kaybını önleyin."
+        ]
 
     def _generate_summary(self, score: float, recommendations: list, is_my_business: bool = False) -> str:
         if is_my_business:
