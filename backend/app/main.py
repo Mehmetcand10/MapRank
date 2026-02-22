@@ -31,7 +31,7 @@ app.add_middleware(
 )
 
 # Global Version Control
-APP_VERSION = "v16-PREMIUM"
+APP_VERSION = "v17-ENTERPRISE"
 
 @app.middleware("http")
 async def log_and_cors_failsafe(request: Request, call_next):

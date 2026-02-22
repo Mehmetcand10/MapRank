@@ -64,6 +64,26 @@ def analyze_business_endpoint(
     
     return analysis
 
+@router.get("/public-report", response_model=schemas.BusinessAnalysis)
+def get_public_report(
+    place_id: str,
+    db: Session = Depends(deps.get_db)
+) -> Any:
+    """
+    Get public detailed analysis for a specific business (No Auth Required for sharing).
+    """
+    if ":" in place_id:
+        place_id = place_id.split(":")[0]
+
+    details = google_maps_service.get_place_details(place_id)
+    if not details:
+        raise HTTPException(status_code=404, detail="Business details not found")
+        
+    analysis = ranking_engine.analyze_business(details)
+    analysis["is_tracked"] = False # Public view doesn't imply tracking status
+    
+    return analysis
+
 @router.post("", response_model=schemas.Business)
 def create_business(
     business_in: schemas.BusinessCreate,
@@ -107,9 +127,10 @@ def create_business(
             google_place_id=business_in.google_place_id,
             name=details.get("name", business_in.name),
             address=details.get("formatted_address"),
-            total_rating=details.get("rating"),
-            review_count=details.get("user_ratings_total"),
-            tenant_id=current_user.tenant_id
+            total_rating=business_in.total_rating,
+            review_count=business_in.review_count,
+            is_my_business=business_in.is_my_business,
+            tenant_id=current_user.tenant_id,
         )
         db.add(db_business)
         db.flush() # Flush to get ID

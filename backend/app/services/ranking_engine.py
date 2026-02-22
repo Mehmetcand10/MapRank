@@ -1,119 +1,124 @@
 import math
 from typing import Dict, Any, List, Optional
+from datetime import datetime, timedelta
 
 from app.services.google_maps import google_maps_service
 
 class RankingEngine:
-    def calculate_score(self, business_data: Dict[str, Any]) -> float:
+    def calculate_advanced_metrics(self, business_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Calculates the MapRank score (0-100) based on various factors.
+        Calculates granular metrics for advanced scoring.
+        Currently using heuristics and mock patterns based on accessible data.
         """
         rating = business_data.get("rating", 0.0)
         review_count = business_data.get("user_ratings_total", 0)
         
-        # Weights
-        W_RATING = 0.4
-        W_REVIEWS = 0.3
+        # Heuristic calculations for mock-up
+        completeness = 0.0
+        if business_data.get("formatted_address"): completeness += 20
+        if business_data.get("formatted_phone_number"): completeness += 20
+        if business_data.get("website"): completeness += 20
+        if business_data.get("photos"): completeness += 20
+        if business_data.get("opening_hours"): completeness += 20
         
-        # Normalize Rating (0-5 -> 0-1)
-        score_rating = rating / 5.0
+        response_rate = min(95.0, rating * 20 - (10 if rating < 4 else 0)) 
+        response_speed = max(2.5, 48 - (rating * 8))
+        velocity = round(review_count * 0.08, 1) if review_count > 0 else 0
+        photo_count = len(business_data.get("photos", [])) if business_data.get("photos") else 0
+        keyword_score = min(98.0, 60 + (rating * 5))
+
+        return {
+            "review_velocity_30d": velocity,
+            "owner_response_rate": response_rate,
+            "response_speed_hours": response_speed,
+            "photo_count": photo_count,
+            "profile_completeness_percent": completeness,
+            "keyword_relevance_score": keyword_score
+        }
+
+    def calculate_score(self, business_data: Dict[str, Any], metrics: Dict[str, Any]) -> float:
+        """
+        Calculates the advanced MapRank score (0-100).
+        """
+        rating = business_data.get("rating", 0.0)
+        review_count = business_data.get("user_ratings_total", 0)
         
-        # Normalize Reviews (Logarithmic scale)
+        W_RATING = 0.25
+        W_REVIEWS = 0.15
+        W_RESPONSE = 0.20
+        W_COMPLETENESS = 0.20
+        W_VELOCITY = 0.10
+        W_RELEVANCE = 0.10
+        
+        s_rating = (rating / 5.0) * 100
         max_reviews = 5000
-        score_reviews = min(math.log(review_count + 1) / math.log(max_reviews), 1.0)
+        s_reviews = min(math.log(review_count + 1) / math.log(max_reviews), 1.0) * 100
+        s_response = metrics["owner_response_rate"]
+        s_completeness = metrics["profile_completeness_percent"]
+        max_vel = 50 
+        s_velocity = min(metrics["review_velocity_30d"] / max_vel, 1.0) * 100
+        s_relevance = metrics["keyword_relevance_score"]
         
-        # Base Score Calculation
-        final_score = (score_rating * W_RATING) + (score_reviews * W_REVIEWS)
+        final_score = (
+            (s_rating * W_RATING) +
+            (s_reviews * W_REVIEWS) +
+            (s_response * W_RESPONSE) +
+            (s_completeness * W_COMPLETENESS) +
+            (s_velocity * W_VELOCITY) +
+            (s_relevance * W_RELEVANCE)
+        )
         
-        # Scale to 0-100
-        normalized_score = (final_score / (W_RATING + W_REVIEWS)) * 100
-        
-        return round(normalized_score, 1)
+        return round(final_score, 1)
 
     def analyze_business(self, business_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Analyzes a business to generate scores, gap analysis, and premium recommendations.
+        Analyzes a business with advanced ENTERPRISE metrics.
         """
-        score = self.calculate_score(business_data)
+        adv_metrics = self.calculate_advanced_metrics(business_data)
+        score = self.calculate_score(business_data, adv_metrics)
+        
         rating = business_data.get("rating", 0.0)
         review_count = business_data.get("user_ratings_total", 0)
         
-        # Define Targets
         TARGET_RATING = 4.8
         TARGET_REVIEWS = 100
-        
         recommendations = []
         
-        # 1. Rating Analysis
-        if rating < 4.0:
+        # Logic for recommendations
+        if adv_metrics["owner_response_rate"] < 70:
             recommendations.append({
                 "type": "critical",
-                "message": "Puanınız kritik seviyede düşük (4.0 altı). Acilen mutsuz müşterilerle ilgilenmelisiniz."
+                "message": f"Yanıt oranınız çok düşük (%{adv_metrics['owner_response_rate']}). Müşterilere mutlaka yanıt verin."
             })
-        elif rating < TARGET_RATING:
-            gap = round(TARGET_RATING - rating, 1)
+            
+        if adv_metrics["profile_completeness_percent"] < 100:
             recommendations.append({
                 "type": "warning",
-                "message": f"Liderler ligine girmek için ortalamanızı {gap} puan artırmalısınız."
+                "message": "Profiliniz tam değil. Eksik bilgileri (çalışma saatleri vb.) Google'da tamamlayın."
             })
-            
-        # 2. Review Count Analysis
-        if review_count < 10:
-            recommendations.append({
-                "type": "critical",
-                "message": "Yorum sayınız çok az. Güven oluşturmak için en az 10 yoruma ulaşın."
-            })
-        elif review_count < TARGET_REVIEWS:
-            needed = TARGET_REVIEWS - review_count
-            recommendations.append({
-                "type": "suggestion",
-                "message": f"Sıralamada yükselmek için yaklaşık {needed} yeni yoruma ihtiyacınız var."
-            })
-            
-        # 3. Competitor Analysis
+
+        # Competitor Analysis
         location = business_data.get("geometry", {}).get("location")
         competitors = []
         rank_position = 0
         total_competitors = 0
         avg_competitor_rating = 0.0
+        competitor_keywords = []
         
         if location:
             types = business_data.get("types", [])
-            selected_type = None
-            generic_types = {"point_of_interest", "establishment", "premise", "geocode"}
-            
-            for t in types:
-                if t not in generic_types:
-                    selected_type = t
-                    break
-            
-            keyword = None
-            if not selected_type:
-                keyword = business_data.get("name", "").split(" ")[-1]
-            
-            competitors_raw = google_maps_service.search_nearby(
-                location=location, 
-                keyword=keyword,
-                type=selected_type
-            )
+            selected_type = next((t for t in types if t not in {"point_of_interest", "establishment", "premise", "geocode"}), None)
+            keyword = business_data.get("name", "").split(" ")[-1] if not selected_type else None
+            competitors_raw = google_maps_service.search_nearby(location=location, keyword=keyword, type=selected_type)
             
             my_place_id = business_data.get("place_id") or business_data.get("google_place_id")
-            competitors = []
-            for c in competitors_raw:
-                if c.get("google_place_id") != my_place_id and c.get("name"):
-                    competitors.append(c)
+            competitors = [c for c in competitors_raw if c.get("google_place_id") != my_place_id and c.get("name")]
             
             if competitors:
-                all_businesses = competitors + [{
-                    "name": business_data.get("name"), 
-                    "rating": rating, 
-                    "user_ratings_total": review_count,
-                    "is_me": True
-                }]
+                all_b = competitors + [{"name": business_data.get("name"), "rating": rating, "user_ratings_total": review_count, "is_me": True}]
+                all_b.sort(key=lambda x: (x.get("rating", 0), x.get("user_ratings_total", 0)), reverse=True)
                 
-                all_businesses.sort(key=lambda x: (x.get("rating", 0), x.get("user_ratings_total", 0)), reverse=True)
-                
-                for i, b in enumerate(all_businesses):
+                for i, b in enumerate(all_b):
                     if b.get("is_me"):
                         rank_position = i + 1
                         break
@@ -121,19 +126,20 @@ class RankingEngine:
                 total_competitors = len(competitors)
                 avg_competitor_rating = sum(c.get("rating", 0) for c in competitors) / total_competitors
                 
-                if rank_position > 3:
-                     recommendations.append({
-                        "type": "warning",
-                        "message": f"Bölgenizdeki {total_competitors} rakip arasında {rank_position}. sıradasınız. İlk 3'e girmek için puanınızı artırın."
-                    })
-                else:
-                     recommendations.append({
-                        "type": "suggestion",
-                        "message": f"Tebrikler! Bölgenizdeki {total_competitors} rakip arasında {rank_position}. sıradasınız."
-                    })
+                # Competitor Keyword Analysis (Mocked)
+                competitor_keywords = [
+                    {"keyword": "uygun fiyat", "count": 12, "impact": "Yüksek"},
+                    {"keyword": "kaliteli hizmet", "count": 9, "impact": "Orta"},
+                    {"keyword": "hızlı teslimat", "count": 7, "impact": "Düşük"}
+                ]
+        
+        benchmarks = {
+            "avg_rating": round(avg_competitor_rating or 4.2, 1),
+            "avg_reviews": 45,
+            "avg_response_rate": 65.0
+        }
 
-        # Return Premium Data Structure
-        return {
+        result = {
             "score": score,
             "metrics": {
                 "rating": rating,
@@ -145,10 +151,7 @@ class RankingEngine:
                 "total_competitors": total_competitors,
                 "avg_competitor_rating": round(avg_competitor_rating, 1)
             },
-            "targets": {
-                "rating": TARGET_RATING,
-                "review_count": TARGET_REVIEWS
-            },
+            "targets": {"rating": TARGET_RATING, "review_count": TARGET_REVIEWS},
             "recommendations": recommendations,
             "analysis_text": self._generate_summary(score, recommendations),
             "formatted_address": business_data.get("formatted_address"),
@@ -158,34 +161,43 @@ class RankingEngine:
             "photo_url": business_data.get("photos", [{}])[0].get("photo_reference") if business_data.get("photos") else None,
             "business_types": business_data.get("types", []),
             "competitors": competitors[:5],
-            # Premium Analysis Data
-            "visibility_score": round(score * 1.05 + 2, 1) if score < 95 else score,
+            "is_tracked": False,
+            
+            # Advanced Metrics
+            "review_velocity_30d": adv_metrics["review_velocity_30d"],
+            "owner_response_rate": adv_metrics["owner_response_rate"],
+            "response_speed_hours": adv_metrics["response_speed_hours"],
+            "photo_count": adv_metrics["photo_count"],
+            "profile_completeness_percent": adv_metrics["profile_completeness_percent"],
+            "keyword_relevance_score": adv_metrics["keyword_relevance_score"],
+            "competitor_keywords": competitor_keywords,
+            
+            # Premium
+            "visibility_score": round(score * 1.05, 1) if score < 95 else score,
             "market_share_estimate": round(35 / (rank_position or 1), 1) if rank_position else 5.0,
             "sentiment_trends": [
                 {"month": "Oca", "score": max(40, score - 15)},
                 {"month": "Şub", "score": max(50, score - 8)},
                 {"month": "Mar", "score": score}
             ],
-            "growth_hacks": self._generate_growth_hacks(business_data, recommendations)
+            "growth_hacks": self._generate_growth_hacks(business_data, recommendations),
+            "sector_benchmarks": benchmarks
         }
+
+        return result
 
     def _generate_growth_hacks(self, data: dict, recs: list) -> list:
         hacks = [
             "Google İşletme profilinize haftalık en az 3 fotoğraf ekleyin (Etkileşimi %35 artırır).",
             "Müşteri yorumlarına ilk 24 saat içinde yanıt verin; algoritma hızı sever.",
-            "En popüler ürününüzü işletme adında veya açıklamasında stratejik olarak geçirin.",
+            "En popüler ürününüzü işletme açıklamasında stratejik olarak geçirin.",
             "Bölgenizdeki rakiplerin yoğun olduğu saatlerde 'Google Post' paylaşarak öne çıkın."
         ]
-        if data.get("rating", 5) < 4.2:
-            hacks.insert(0, "Düşük puanlı yorumlara çözüm odaklı yanıt vererek müşteriyi geri kazanmaya çalışın.")
         return hacks[:4]
 
     def _generate_summary(self, score: float, recommendations: list) -> str:
-        if score >= 85:
-            return "Harika iş! İşletmeniz bölgenin en iyileri arasında. Liderliğinizi korumak için etkileşimi sürdürün."
-        elif score >= 60:
-            return "İyi bir yoldasınız ancak zirve için atmanız gereken adımlar var. Özellikle yorum sayısına odaklanın."
-        else:
-            return "İşletmenizin dijital varlığı zayıf görünüyor. Potansiyel müşterileri kaçırıyor olabilirsiniz."
+        if score >= 85: return "Harika iş! İşletmeniz bölgenin en iyileri arasında."
+        if score >= 60: return "İyi bir yoldasınız ancak zirve için atmanız gereken adımlar var."
+        return "İşletmenizin dijital varlığı zayıf görünüyor. Acil müdahale gerekli."
 
 ranking_engine = RankingEngine()

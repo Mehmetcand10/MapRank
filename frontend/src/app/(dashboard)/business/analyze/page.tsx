@@ -50,6 +50,14 @@ interface AnalysisResult {
     visibility_score?: number
     market_share_estimate?: number
     growth_hacks?: string[]
+    // Advanced Metrics
+    review_velocity_30d?: number
+    owner_response_rate?: number
+    response_speed_hours?: number
+    photo_count?: number
+    profile_completeness_percent?: number
+    keyword_relevance_score?: number
+    competitor_keywords?: { keyword: string, count: number, impact: string }[]
 }
 
 interface Competitor {
@@ -199,6 +207,34 @@ function AnalyzeContent() {
                 </div>
             </div>
 
+            {/* Advanced Metrics Grid */}
+            <div className="grid gap-6 md:grid-cols-3">
+                <MetricCard
+                    title="Yorum Hızı (30 Gün)"
+                    value={data.review_velocity_30d || 0}
+                    unit="y/ay"
+                    icon={Icons.trending}
+                    progress={Math.min(100, (data.review_velocity_30d || 0) * 5)}
+                    footer="Aylık yeni yorum performansı"
+                />
+                <MetricCard
+                    title="Yanıt Oranı"
+                    value={data.owner_response_rate || 0}
+                    unit="%"
+                    icon={Icons.messageSquare}
+                    progress={data.owner_response_rate}
+                    footer="Müşteri geri bildirimi hızı"
+                />
+                <MetricCard
+                    title="Profil Tamlığı"
+                    value={data.profile_completeness_percent || 0}
+                    unit="%"
+                    icon={Icons.checkCircle}
+                    progress={data.profile_completeness_percent}
+                    footer="Google Business Profile sağlığı"
+                />
+            </div>
+
             {/* Main Stats Grid */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <StatCard
@@ -287,18 +323,58 @@ function AnalyzeContent() {
                             </div>
                         </div>
 
-                        {/* Visibility Heatmap Mockup */}
-                        <div className="mt-6 pt-6 border-t border-white/10">
-                            <h4 className="text-sm font-bold uppercase tracking-widest text-indigo-300 mb-4 flex items-center gap-2">
-                                <Icons.mapPin className="h-4 w-4" />
-                                Bölgesel Görünürlük Simülasyonu
-                            </h4>
-                            <div className="h-32 w-full rounded-xl bg-slate-800 relative overflow-hidden flex items-center justify-center group">
-                                <div className="absolute inset-0 opacity-20 bg-[url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/0,0,1/400x200?access_token=none')] bg-cover"></div>
-                                <div className="absolute h-16 w-16 bg-blue-500 rounded-full blur-3xl animate-pulse"></div>
-                                <div className="absolute h-10 w-10 bg-indigo-400 rounded-full blur-2xl top-4 right-1/4 opacity-50"></div>
-                                <div className="relative text-xs text-indigo-200 font-medium bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-md">
-                                    Sizin İşletmeniz: En Yüksek Yoğunluk Kadıköy / Beşiktaş Hattı
+                        {/* Visibility Heatmap Simulation */}
+                        <div className="mt-8 pt-8 border-t border-white/10">
+                            <div className="flex items-center justify-between mb-6">
+                                <h4 className="text-sm font-bold uppercase tracking-widest text-indigo-300 flex items-center gap-2">
+                                    <Icons.globe className="h-4 w-4" />
+                                    Stratejik Görünürlük Haritası
+                                </h4>
+                                <Badge className="bg-indigo-500/20 text-indigo-200 border-none text-[10px]">Canlı Simülasyon</Badge>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="md:col-span-2 h-64 rounded-2xl bg-slate-800 relative overflow-hidden border border-white/5 shadow-inner">
+                                    {/* Mock Map Background */}
+                                    <div className="absolute inset-0 opacity-30 bg-[url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/0,0,1/600x400?access_token=none')] bg-cover"></div>
+
+                                    {/* Heatmap Hotspots */}
+                                    <div className="absolute top-1/4 left-1/3 h-24 w-24 bg-indigo-500 rounded-full blur-[60px] opacity-60 animate-pulse"></div>
+                                    <div className="absolute top-1/2 left-2/3 h-16 w-16 bg-blue-400 rounded-full blur-[40px] opacity-40 animate-pulse delay-700"></div>
+                                    <div className="absolute bottom-1/4 left-1/4 h-20 w-20 bg-emerald-400 rounded-full blur-[50px] opacity-30 animate-pulse delay-500"></div>
+
+                                    {/* Location Pins */}
+                                    <div className="absolute top-1/4 left-1/3 -ml-2 -mt-2">
+                                        <div className="h-4 w-4 bg-white rounded-full flex items-center justify-center shadow-lg">
+                                            <div className="h-2 w-2 bg-indigo-600 rounded-full"></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Legend */}
+                                    <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md p-3 rounded-lg border border-white/10 text-[10px] space-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-2 w-2 rounded-full bg-indigo-500"></div>
+                                            <span>Yüksek Görünürlük</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-2 w-2 rounded-full bg-emerald-400"></div>
+                                            <span>Fırsat Bölgesi</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                                        <h5 className="text-xs font-bold text-indigo-300 uppercase mb-2">Büyüme Fırsatı</h5>
+                                        <p className="text-sm font-medium">Beşiktaş / Ortaköy hattında rakip yoğunluğu düşük. %22 daha fazla trafik potansiyeli!</p>
+                                    </div>
+                                    <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                                        <h5 className="text-xs font-bold text-emerald-400 uppercase mb-2">Kritik Bölge</h5>
+                                        <p className="text-sm font-medium">Kadıköy Merkez bölgesinde 3 ana rakibiniz çok güçlü. Etkileşimi artırmalısınız.</p>
+                                    </div>
+                                    <Button variant="outline" className="w-full text-indigo-300 border-indigo-500/30 hover:bg-indigo-500/10 h-8 text-xs">
+                                        Detaylı Isı Haritası (Cebinizde)
+                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -326,6 +402,80 @@ function AnalyzeContent() {
                         <Button className="w-full bg-indigo-600 hover:bg-indigo-700 mt-2">
                             Tam Raporu İndir (PDF)
                         </Button>
+                    </CardContent>
+                </MotionCard>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-3">
+                {/* AI Growth Engine - Keyword Analysis */}
+                <MotionCard delay={0.4} className="lg:col-span-1 border-emerald-100 bg-emerald-50/20">
+                    <CardHeader>
+                        <CardTitle className="text-emerald-900 flex items-center gap-2">
+                            <Icons.search className="h-5 w-5 text-emerald-600" />
+                            AI Rakip Kelime Analizi
+                        </CardTitle>
+                        <CardDescription>Rakiplerinizin en çok etkileşim aldığı kelimeler.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {data.competitor_keywords?.map((item, i) => (
+                            <div key={i} className="flex items-center justify-between p-3 bg-white rounded-xl border border-emerald-100 shadow-sm">
+                                <div className="space-y-0.5">
+                                    <p className="text-sm font-bold text-slate-800">"{item.keyword}"</p>
+                                    <p className="text-[10px] text-slate-500">{item.count} yorumda geçiyor</p>
+                                </div>
+                                <Badge className={
+                                    item.impact === 'Yüksek' ? 'bg-emerald-500' :
+                                        item.impact === 'Orta' ? 'bg-blue-500' : 'bg-slate-500'
+                                }>
+                                    {item.impact}
+                                </Badge>
+                            </div>
+                        ))}
+                        <div className="pt-2">
+                            <p className="text-[10px] text-emerald-700 italic">
+                                * Bu kelimeleri yanıtlarınızda kullanarak görünürlüğünüzü artırabilirsiniz.
+                            </p>
+                        </div>
+                    </CardContent>
+                </MotionCard>
+
+                {/* Automatic Competitor Discovery */}
+                <MotionCard delay={0.5} className="lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Icons.store className="h-5 w-5 text-blue-600" />
+                            Otomatik Rakip Keşfi
+                        </CardTitle>
+                        <CardDescription>Bölgenizdeki en güçlü 5 rakip ve performans kıyaslaması.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            {data.competitors?.map((comp, i) => (
+                                <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-600">
+                                            {i + 1}
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-slate-900">{comp.name}</p>
+                                            <p className="text-xs text-slate-500 truncate max-w-[200px]">{comp.address}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-6">
+                                        <div className="text-right">
+                                            <div className="flex items-center gap-1 text-amber-500">
+                                                <Icons.star className="h-3 w-3 fill-current" />
+                                                <span className="text-sm font-bold">{comp.rating}</span>
+                                            </div>
+                                            <p className="text-[10px] text-slate-400">{comp.user_ratings_total} yorum</p>
+                                        </div>
+                                        <Badge variant="outline" className="border-blue-200 text-blue-600">
+                                            Rakip
+                                        </Badge>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </CardContent>
                 </MotionCard>
             </div>
@@ -372,7 +522,7 @@ function AnalyzeContent() {
                     <CardContent className="space-y-4">
                         {data.recommendations.map((rec, i) => (
                             <div key={i} className={`flex gap-3 p-4 rounded-xl border-l-4 ${rec.type === 'critical' ? 'bg-red-50 border-red-500' :
-                                    rec.type === 'warning' ? 'bg-amber-50 border-amber-500' : 'bg-blue-50 border-blue-500'
+                                rec.type === 'warning' ? 'bg-amber-50 border-amber-500' : 'bg-blue-50 border-blue-500'
                                 }`}>
                                 {rec.type === 'critical' ? <Icons.warning className="h-5 w-5 text-red-600 shrink-0" /> : <Icons.alertCircle className="h-5 w-5 text-amber-600 shrink-0" />}
                                 <p className="text-sm font-medium text-slate-800">{rec.message}</p>
@@ -382,6 +532,33 @@ function AnalyzeContent() {
                 </MotionCard>
             </div>
         </div>
+    )
+}
+
+function MetricCard({ title, value, unit, icon: Icon, progress, footer }: any) {
+    return (
+        <MotionCard className="border-none shadow-md bg-white dark:bg-slate-900 overflow-hidden">
+            <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                    <div className="space-y-1">
+                        <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">{title}</p>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-3xl font-black text-slate-900 dark:text-white">{value}</span>
+                            <span className="text-sm font-bold text-slate-400">{unit}</span>
+                        </div>
+                    </div>
+                    <div className="h-12 w-12 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-indigo-400">
+                        <Icon className="h-6 w-6" />
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <Progress value={progress} className="h-2" />
+                    <p className="text-[10px] font-medium text-slate-400 italic">
+                        {footer}
+                    </p>
+                </div>
+            </CardContent>
+        </MotionCard>
     )
 }
 

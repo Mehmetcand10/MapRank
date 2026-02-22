@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float, Integer, ForeignKey, DateTime, JSON, BigInteger
+from sqlalchemy import Column, String, Float, Integer, ForeignKey, DateTime, JSON, BigInteger, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import uuid
@@ -14,6 +14,7 @@ class Business(Base):
     address = Column(String)
     total_rating = Column(Float)
     review_count = Column(Integer)
+    is_my_business = Column(Boolean, default=False)
     
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"))
     tenant = relationship("Tenant", back_populates="businesses")
