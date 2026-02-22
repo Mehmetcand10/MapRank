@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { MotionCard } from "@/components/ui/motion-card"
 import { Icons } from "@/components/icons"
@@ -87,6 +88,7 @@ function AnalyzeContent() {
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [data, setData] = useState<AnalysisResult | null>(null)
+    const [isMyBusiness, setIsMyBusiness] = useState(false)
 
     const [searchQuery, setSearchQuery] = useState("")
     const [searchResults, setSearchResults] = useState<BusinessSearchResult[]>([])
@@ -142,7 +144,8 @@ function AnalyzeContent() {
                 name: name || data.formatted_address || "Bilinmeyen İşletme",
                 address: data.formatted_address,
                 total_rating: data.metrics.rating,
-                review_count: data.metrics.review_count
+                review_count: data.metrics.review_count,
+                is_my_business: isMyBusiness
             })
             toast({
                 title: "Başarılı",
@@ -288,10 +291,23 @@ function AnalyzeContent() {
                             Takipte
                         </Button>
                     ) : (
-                        <Button size="lg" onClick={handleSaveBusiness} disabled={saving} className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8 h-11 md:h-12 shadow-lg shadow-blue-200 active:scale-95 transition-all">
-                            {saving ? <Icons.spinner className="mr-2 h-4 w-4 animate-spin" /> : <Icons.plus className="mr-2 h-4 w-4" />}
-                            Takip Et
-                        </Button>
+                        <div className="flex flex-col md:flex-row items-center gap-3">
+                            <Button
+                                variant={isMyBusiness ? "primary" : "outline"}
+                                onClick={() => setIsMyBusiness(!isMyBusiness)}
+                                className={cn(
+                                    "rounded-full h-11 md:h-12 px-6 transition-all",
+                                    isMyBusiness ? "bg-indigo-600 text-white shadow-md shadow-indigo-100" : "text-slate-600 border-slate-200"
+                                )}
+                            >
+                                {isMyBusiness ? <Icons.check className="mr-2 h-4 w-4" /> : <Icons.plus className="mr-2 h-4 w-4" />}
+                                Bu Benim İşletmem
+                            </Button>
+                            <Button size="lg" onClick={handleSaveBusiness} disabled={saving} className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8 h-11 md:h-12 shadow-lg shadow-blue-200 active:scale-95 transition-all">
+                                {saving ? <Icons.spinner className="mr-2 h-4 w-4 animate-spin" /> : <Icons.plus className="mr-2 h-4 w-4" />}
+                                Takip Et ve Kaydet
+                            </Button>
+                        </div>
                     )}
                 </div>
             </div>
