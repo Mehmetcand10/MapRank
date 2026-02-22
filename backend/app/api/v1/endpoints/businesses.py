@@ -1,6 +1,6 @@
 from typing import List, Any
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app import schemas, models
 from app.api import deps, auth_deps
@@ -42,9 +42,9 @@ def search_businesses(
         
     return results
 
-@router.post("/analyze", response_model=schemas.BusinessAnalysis)
+@router.get("/analyze", response_model=schemas.BusinessAnalysis)
 def analyze_business_endpoint(
-    place_id: str,
+    place_id: str = Query(..., description="The Google Place ID to analyze"),
     db: Session = Depends(deps.get_db),
     current_user: schemas.User = Depends(auth_deps.get_current_user)
 ) -> Any:

@@ -176,7 +176,7 @@ class RankingEngine:
             "formatted_phone_number": business_data.get("formatted_phone_number"),
             "website": business_data.get("website"),
             "validation_status": business_data.get("business_status", "Unknown"),
-            "photo_url": business_data.get("photos", [{}])[0].get("photo_reference") if business_data.get("photos") else None,
+            "photo_url": business_data.get("photos", [{}])[0].get("photo_reference") if business_data.get("photos") else business_data.get("icon"),
             "business_types": business_data.get("types", []),
             "competitors": competitors[:5],
             "is_tracked": False,
