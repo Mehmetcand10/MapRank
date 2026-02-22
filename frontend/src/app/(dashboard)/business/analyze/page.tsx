@@ -94,6 +94,10 @@ function AnalyzeContent() {
     const [searchResults, setSearchResults] = useState<BusinessSearchResult[]>([])
     const [searchLoading, setSearchLoading] = useState(false)
 
+    const handleDownloadPDF = () => {
+        window.print()
+    }
+
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!searchQuery.trim()) return
@@ -267,7 +271,7 @@ function AnalyzeContent() {
     return (
         <div className="space-y-6 md:space-y-8 p-4 md:p-8 animate-in fade-in duration-500">
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 bg-white dark:bg-slate-900 p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 bg-white dark:bg-slate-900 p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 no-print">
                 <div className="space-y-2">
                     <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
                         <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground dark:text-white leading-tight">{name || "İşletme Analizi"}</h2>
@@ -504,7 +508,11 @@ function AnalyzeContent() {
                                 <p className="text-sm text-slate-700 leading-tight font-medium">{hack}</p>
                             </div>
                         ))}
-                        <Button className="w-full bg-indigo-600 hover:bg-indigo-700 mt-2">
+                        <Button
+                            className="w-full bg-indigo-600 hover:bg-indigo-700 mt-2 no-print"
+                            onClick={handleDownloadPDF}
+                        >
+                            <Icons.fileDown className="mr-2 h-4 w-4" />
                             Tam Raporu İndir (PDF)
                         </Button>
                     </CardContent>

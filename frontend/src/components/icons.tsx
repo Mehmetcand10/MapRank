@@ -26,7 +26,9 @@ import {
     AlertCircle,
     CheckCircle,
     Settings,
-    LogOut
+    LogOut,
+    FileDown,
+    FileText
 } from "lucide-react"
 
 export const Icons = {
@@ -57,5 +59,7 @@ export const Icons = {
     alertCircle: AlertCircle,
     checkCircle: CheckCircle,
     settings: Settings,
-    logOut: LogOut
+    logOut: LogOut,
+    fileDown: FileDown,
+    fileText: FileText
 }
