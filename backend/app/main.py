@@ -42,15 +42,6 @@ def root():
 def health_v16():
     return {"status": "ok", "version": APP_VERSION}
 
-@app.get("/")
-def root():
-    return {"message": "MapRank API is alive", "version": APP_VERSION}
-
-@app.get("/health")
-@app.get("/health/v16")
-def health_v16():
-    return {"status": "ok", "version": APP_VERSION}
-
 @app.get("/health/db")
 def health_db_check(db: Session = Depends(get_db)):
     try:
