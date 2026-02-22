@@ -52,15 +52,16 @@ def analyze_business_endpoint(
     Get detailed analysis for a specific business.
     """
     try:
-        # Clean place_id if it contains a suffix like :1
-        if ":" in place_id:
-            place_id = place_id.split(":")[0]
+        # User requested: no magic cleaning, just the full data
+        # Let Google handle the placeID exactly as it comes
+        logging.info(f"ANALYSIS REQUEST: User {current_user.email} -> PlaceID: {place_id}")
 
         # 1. Fetch detailed data from Google Maps
         details = google_maps_service.get_place_details(place_id)
         
         if not details:
-            raise HTTPException(status_code=404, detail="Business details not found")
+            logging.error(f"GOOGLE DATA ERROR: Could not find details for {place_id}")
+            raise HTTPException(status_code=404, detail=f"Google Maps records for this business ({place_id}) could not be retrieved.")
             
         # 2. Run Analysis
         analysis = ranking_engine.analyze_business(details)

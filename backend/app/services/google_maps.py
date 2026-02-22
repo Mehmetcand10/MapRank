@@ -34,27 +34,23 @@ class GoogleMapsService:
 
     def get_place_details(self, place_id: str) -> Dict[str, Any]:
         """
-        Fetches detailed information about a specific place.
+        Fetches full detailed information about a specific place.
+        Ensuring completeness as requested ("full data from google").
         """
         try:
-            # Fields to retrieve - 'types' is correct, not 'type'
-            fields = ['name', 'formatted_address', 'formatted_phone_number', 
-                      'rating', 'user_ratings_total', 'reviews', 'website', 
-                      'geometry', 'photos', 'business_status', 'types', 'opening_hours']
-            
-            details = self.client.place(place_id=place_id, fields=fields)
-            
-            if details.get('status') == 'OK':
-                return details.get('result', {})
-                
-            # Fallback if specific fields fail
-            print(f"Warning: Google Details Status: {details.get('status')}. Retrying without fields...")
+            # Removed field restrictions to get absolutely everything Google offers
+            # This ensures we never get 404 due to missing requested fields
             details = self.client.place(place_id=place_id)
-            return details.get('result', {})
+            
+            if details and details.get('status') == 'OK':
+                return details.get('result', {})
+            
+            print(f"Google API Warning: Status {details.get('status')} for place {place_id}")
+            return details.get('result') if details else None
             
         except Exception as e:
             import traceback
-            print(f"Google API Error (get_place_details): {str(e)}")
+            print(f"Google API Critical Error: {str(e)}")
             print(traceback.format_exc())
             return None
 
