@@ -294,7 +294,9 @@ class RankingEngine:
                 "Müşterilerinizin evindeki mobilyaların yerleşimini görebileceği basit bir AR (Artırılmış Gerçeklik) filtresi oluşturun.",
                 "Eski mobilyaları yenileme (upcycling) atölyeleri düzenleyerek mağaza trafiğini artırın.",
                 "Mimarlar ve iç mimarlar için özel bir 'Sadakat Programı' başlatın; projelerinde sizin ürünlerinize yer versinler.",
-                "Kişiye özel ölçü ve tasarım hizmetini 'Ücretsiz Keşif' ile birleştirerek satış kapatma oranını artırın."
+                "Kişiye özel ölçü ve tasarım hizmetini 'Ücretsiz Keşif' ile birleştirerek satış kapatma oranını artırın.",
+                "Mobilya kiralama modeli (subscription) ile kısa dönemli konaklama yerlerine (Airbnb vb.) paketler sunun.",
+                "Bölgenizdeki emlakçılarla işbirliği yaparak yeni ev alanlara 'İlk Ev Paketi' indirimleri tanımlayın."
             ]
         # Restaurant/Cafe Specific
         elif "restaurant" in types or "cafe" in types or "food" in types:
@@ -302,7 +304,9 @@ class RankingEngine:
                 "Menünüzdeki en popüler yemeğin 'Nasıl Yapılır' videosunu çekip Google Post'ta paylaşın (Gastronomi meraklılarını çeker).",
                 "Hafta içi öğle saatleri için 'Hızlı İş Menüsü' oluşturarak beyaz yakalı trafiğini domine edin.",
                 "Yemek kartları (Sodexo, Multinet vb.) ile yapılan harcamalara özel 'Tatlı İkramı' kampanyası başlatın.",
-                "Bölgenizdeki yerel etkinliklere (festival, konser) özel 'Take-away' paketleri tasarlayın."
+                "Bölgenizdeki yerel etkinliklere (festival, konser) özel 'Take-away' paketleri tasarlayın.",
+                "İşletmenizin bir köşesini 'Instagrammable' hale getirerek müşterilerin ücretsiz reklamınızı yapmasını sağlayın.",
+                "Sadık müşteriler için 'Gizli Menü' oluşturarak topluluk hissini güçlendirin."
             ]
         # Health/Beauty Specific
         elif "health" in types or "beauty_salon" in types or "hair_care" in types:
@@ -310,7 +314,9 @@ class RankingEngine:
                 "Google Haritalar üzerinden yapılan her randevu için 'Ücretsiz Cilt Analizi' veya 'Ekstra Bakım' tanımlayın.",
                 "Müşterilerinizin 'Önce/Sonra' değişimlerini (izin alarak) yüksek kaliteli video olarak paylaşın.",
                 "Kendi markanıza ait bakım ürünlerini paket olarak satışa sunarak gelir modelinizi çeşitlendirin.",
-                "Yerel influencerlar ile 'Güzellik Günü' etkinlikleri yaparak yeni kitlelere ulaşın."
+                "Yerel influencerlar ile 'Güzellik Günü' etkinlikleri yaparak yeni kitlelere ulaşın.",
+                "Aylık üyelik modeli (Subscription) ile düzenli bakım yaptıranlara sabit fiyat garantisi verin.",
+                "Düğün ve özel gün paketlerini Google Haritalar görsellerinde 'Hizmet Broşürü' olarak öne çıkarın."
             ]
         # Default fallback
         return [

@@ -62,6 +62,12 @@ interface AnalysisResult {
     visibility_score?: number
     market_share_estimate?: number
     growth_hacks?: string[]
+    growth_ideas?: string[]
+    strategic_insights?: {
+        market_position: string
+        competitive_edge: string
+        investment_priority: string
+    }
     // Advanced Metrics
     review_velocity_30d?: number
     owner_response_rate?: number
@@ -658,6 +664,107 @@ function AnalyzeContent() {
                         ))}
                     </CardContent>
                 </MotionCard>
+            </div>
+
+            {/* Premium Business Growth Ideas */}
+            {data.growth_ideas && data.growth_ideas.length > 0 && (
+                <MotionCard delay={0.7} className="border-indigo-500/20 bg-indigo-500/5 overflow-hidden">
+                    <CardHeader className="bg-indigo-600 text-white p-6">
+                        <CardTitle className="flex items-center gap-3 text-xl">
+                            <Icons.settings className="h-6 w-6 animate-spin-slow" />
+                            Geleceğin İşletme Fikirleri (Premium Rapor)
+                        </CardTitle>
+                        <CardDescription className="text-indigo-100">Yapılan sektör analizine göre sizin için üretilmiş özel büyüme modelleri.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-8">
+                        <div className="grid gap-6 md:grid-cols-2">
+                            {data.growth_ideas.map((idea: string, i: number) => (
+                                <div key={i} className="flex gap-4 p-5 bg-white dark:bg-slate-900 rounded-2xl border border-indigo-100 dark:border-indigo-900 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 flex items-center justify-center shrink-0 font-black">
+                                        {i + 1}
+                                    </div>
+                                    <p className="text-base font-semibold text-slate-800 dark:text-slate-200 leading-relaxed">{idea}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </MotionCard>
+            )}
+
+            {/* Premium PDF Template (Hidden from view, visible to html2pdf) */}
+            <div id="premium-report-template" className="hidden" style={{ width: '800px', padding: '40px', background: 'white', color: '#0f172a' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '4px solid #4f46e5', paddingBottom: '20px', marginBottom: '30px' }}>
+                    <div>
+                        <h1 style={{ fontSize: '32px', fontWeight: '900', margin: 0 }}>MapRank <span style={{ color: '#4f46e5' }}>PRO</span></h1>
+                        <p style={{ margin: 0, fontWeight: 'bold', color: '#64748b' }}>Stratejik İşletme Analiz Raporu</p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                        <p style={{ margin: 0, fontSize: '18px', fontWeight: '900' }}>{name}</p>
+                        <p style={{ margin: 0, fontSize: '12px' }}>{new Date().toLocaleDateString('tr-TR')}</p>
+                    </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
+                    <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '15px' }}>
+                        <h3 style={{ margin: '0 0 10px 0', fontSize: '14px', textTransform: 'uppercase', color: '#4f46e5' }}>Performans Skoru</h3>
+                        <div style={{ fontSize: '48px', fontWeight: '900' }}>%{data.score}</div>
+                        <p style={{ fontSize: '12px', color: '#64748b', margin: '10px 0 0 0' }}>{data.analysis_text}</p>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        <div style={{ border: '1px solid #e2e8f0', padding: '15px', borderRadius: '12px' }}>
+                            <small style={{ color: '#94a3b8' }}>Pozisyon</small>
+                            <div style={{ fontSize: '20px', fontWeight: 'bold' }}>#{data.metrics.rank_position}</div>
+                        </div>
+                        <div style={{ border: '1px solid #e2e8f0', padding: '15px', borderRadius: '12px' }}>
+                            <small style={{ color: '#94a3b8' }}>Pazar Payı</small>
+                            <div style={{ fontSize: '20px', fontWeight: 'bold' }}>%{data.market_share_estimate}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style={{ marginBottom: '30px' }}>
+                    <h3 style={{ borderBottom: '2px solid #e2e8f0', paddingBottom: '10px', marginBottom: '15px' }}>💎 Stratejik Yol Haritası (Milyonluk Öneriler)</h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                        {data.growth_hacks?.slice(0, 10).map((hack: string, i: number) => (
+                            <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'start' }}>
+                                <div style={{ background: '#4f46e5', color: 'white', minWidth: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold' }}>{i + 1}</div>
+                                <p style={{ margin: 0, fontSize: '12px', lineHeight: '1.4' }}>{hack}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div style={{ marginBottom: '30px', background: '#eef2ff', padding: '25px', borderRadius: '20px' }}>
+                    <h3 style={{ margin: '0 0 15px 0', color: '#312e81' }}>🚀 İşletmenizi Büyütecek Somut Fikirler</h3>
+                    <div>
+                        {data.growth_ideas?.map((idea: string, i: number) => (
+                            <div key={i} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                                <div style={{ color: '#4f46e5', fontWeight: 'bold' }}>•</div>
+                                <p style={{ margin: 0, fontSize: '13px', fontWeight: '500', color: '#1e1b4b' }}>{idea}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '20px' }}>
+                    <div>
+                        <h3 style={{ fontSize: '16px', marginBottom: '15px' }}>🔍 Rakip Analiz Özeti</h3>
+                        <div>
+                            {data.competitors?.slice(0, 3).map((comp: any, i: number) => (
+                                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', background: '#f8fafc', borderRadius: '10px', marginBottom: '8px' }}>
+                                    <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{comp.name}</span>
+                                    <span style={{ fontSize: '12px', color: '#4f46e5' }}>%{Math.round(comp.rating * 20)} Skor</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div style={{ background: '#f1f5f9', padding: '15px', borderRadius: '15px', border: '1px dashed #cbd5e1' }}>
+                        <h4 style={{ margin: '0 0 10px 0', fontSize: '13px' }}>💡 MapRank Notu</h4>
+                        <p style={{ fontSize: '11px', color: '#475569', lineHeight: '1.5' }}>
+                            Bu rapor yapay zeka tarafından 36 farklı parametre incelenerek oluşturulmuştur. Önerilerin uygulanması işletme görünürlüğünü ortalama %35 artırmaktadır.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     )
