@@ -3,8 +3,11 @@ from typing import Any, Union
 from jose import jwt
 from passlib.context import CryptContext
 from app.core.config import settings
+import hashlib
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Switch to pbkdf2_sha256 as primary to bypass bcrypt 72-byte limit
+# We keep bcrypt as a secondary scheme for potential existing hashes
+pwd_context = CryptContext(schemes=["pbkdf2_sha256", "bcrypt"], deprecated="auto")
 
 ALGORITHM = settings.ALGORITHM
 
@@ -21,21 +24,10 @@ def create_access_token(
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-import hashlib
-
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    # Pre-hash to handle passwords > 72 chars
-    pw_hash = hashlib.sha256(plain_password.encode()).hexdigest()
-    return pwd_context.verify(pw_hash, hashed_password)
+    # Passlib correctly identifies the scheme from the hash string
+    return pwd_context.verify(plain_password, hashed_password)
 
 def get_password_hash(password: str) -> str:
-    # Pre-hash to handle passwords > 72 chars (bcrypt limit)
-    # The hexdigest is always exactly 64 characters.
-    try:
-        pw_hash = hashlib.sha256(password.encode()).hexdigest()
-        print(f"DEBUG_SECURITY: Hashing success. Input len: {len(password)}, Hash len: {len(pw_hash)}")
-        return pwd_context.hash(pw_hash)
-    except Exception as e:
-        print(f"DEBUG_SECURITY: Hashing failed: {str(e)}")
-        # Absolute fallback: truncate to 72 chars if SHA256 somehow failed
-        return pwd_context.hash(password[:72])
+    # PBKDF2 has no password length limit
+    return pwd_context.hash(password)
