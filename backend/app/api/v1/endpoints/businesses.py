@@ -51,31 +51,41 @@ def analyze_business_endpoint(
     """
     Get detailed analysis for a specific business.
     """
-    # Clean place_id if it contains a suffix like :1
-    if ":" in place_id:
-        place_id = place_id.split(":")[0]
+    try:
+        # Clean place_id if it contains a suffix like :1
+        if ":" in place_id:
+            place_id = place_id.split(":")[0]
 
-    # 1. Fetch detailed data from Google Maps
-    details = google_maps_service.get_place_details(place_id)
-    
-    if not details:
-        raise HTTPException(status_code=404, detail="Business details not found")
+        # 1. Fetch detailed data from Google Maps
+        details = google_maps_service.get_place_details(place_id)
         
-    # 2. Run Analysis
-    analysis = ranking_engine.analyze_business(details)
-    
-    # 3. Check if business is already tracked by this user/tenant
-    exists = db.query(models.Business).filter(
-        models.Business.google_place_id == place_id,
-        models.Business.tenant_id == current_user.tenant_id
-    ).first()
-    
-    if exists:
-        analysis["is_tracked"] = True
-    else:
-        analysis["is_tracked"] = False
-    
-    return analysis
+        if not details:
+            raise HTTPException(status_code=404, detail="Business details not found")
+            
+        # 2. Run Analysis
+        analysis = ranking_engine.analyze_business(details)
+        
+        # 3. Check if business is already tracked by this user/tenant
+        exists = db.query(models.Business).filter(
+            models.Business.google_place_id == place_id,
+            models.Business.tenant_id == current_user.tenant_id
+        ).first()
+        
+        if exists:
+            analysis["is_tracked"] = True
+        else:
+            analysis["is_tracked"] = False
+        
+        return analysis
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        import traceback
+        import logging
+        error_trace = traceback.format_exc()
+        logging.error(f"Analysis Endpoint Error: {str(e)}")
+        logging.error(error_trace)
+        raise HTTPException(status_code=500, detail=f"Analysis engine error: {str(e)}")
 
 @router.get("/public-report", response_model=schemas.BusinessAnalysis)
 def get_public_report(

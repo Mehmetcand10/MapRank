@@ -40,7 +40,7 @@ class GoogleMapsService:
             # Fields to retrieve to save costs/latency
             fields = ['name', 'formatted_address', 'formatted_phone_number', 
                       'rating', 'user_ratings_total', 'reviews', 'website', 
-                      'geometry', 'photo', 'business_status', 'type']
+                      'geometry', 'photos', 'business_status', 'type', 'opening_hours']
             
             details = self.client.place(place_id=place_id, fields=fields)
             
