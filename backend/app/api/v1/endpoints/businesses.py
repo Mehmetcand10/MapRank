@@ -1,3 +1,5 @@
+import logging
+import traceback
 from typing import List, Any
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -81,8 +83,6 @@ def analyze_business_endpoint(
     except HTTPException as e:
         raise e
     except Exception as e:
-        import traceback
-        import logging
         error_trace = traceback.format_exc()
         logging.error(f"Analysis Endpoint Error: {str(e)}")
         logging.error(error_trace)
@@ -175,7 +175,6 @@ def create_business(
         print(f"DEBUG: Business {db_business.id} saved successfully.")
         return db_business
     except Exception as e:
-        import traceback
         error_trace = traceback.format_exc()
         print(f"CRITICAL: Error saving business: {str(e)}")
         print(error_trace)
