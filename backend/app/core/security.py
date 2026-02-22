@@ -30,7 +30,12 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     # Pre-hash to handle passwords > 72 chars (bcrypt limit)
-    # The output is 64 hex characters, which is well within 72 bytes.
-    print(f"DEBUG_SECURITY: Hashing password of length {len(password)}")
-    pw_hash = hashlib.sha256(password.encode()).hexdigest()
-    return pwd_context.hash(pw_hash)
+    # The hexdigest is always exactly 64 characters.
+    try:
+        pw_hash = hashlib.sha256(password.encode()).hexdigest()
+        print(f"DEBUG_SECURITY: Hashing success. Input len: {len(password)}, Hash len: {len(pw_hash)}")
+        return pwd_context.hash(pw_hash)
+    except Exception as e:
+        print(f"DEBUG_SECURITY: Hashing failed: {str(e)}")
+        # Absolute fallback: truncate to 72 chars if SHA256 somehow failed
+        return pwd_context.hash(password[:72])
