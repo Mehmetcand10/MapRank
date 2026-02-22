@@ -245,20 +245,29 @@ class RankingEngine:
                 {"month": "Şub", "score": max(50, score - 8)},
                 {"month": "Mar", "score": score}
             ],
-            "growth_hacks": self._generate_growth_hacks(business_data, recommendations),
+            "growth_hacks": self._generate_growth_hacks(business_data, recommendations, is_my_business),
             "sector_benchmarks": benchmarks
         }
 
         return result
 
-    def _generate_growth_hacks(self, data: dict, recs: list) -> list:
-        hacks = [
-            "Google İşletme profilinize haftalık en az 3 fotoğraf ekleyin (Etkileşimi %35 artırır).",
-            "Müşteri yorumlarına ilk 24 saat içinde yanıt verin; algoritma hızı sever.",
-            "En popüler ürününüzü işletme açıklamasında stratejik olarak geçirin.",
-            "Bölgenizdeki rakiplerin yoğun olduğu saatlerde 'Google Post' paylaşarak öne çıkın."
-        ]
-        return hacks[:4]
+    def _generate_growth_hacks(self, data: dict, recs: list, is_my_business: bool = False) -> list:
+        if is_my_business:
+            return [
+                "Google İşletme profilinize haftalık en az 3 fotoğraf ekleyin (Etkileşimi %35 artırır).",
+                "Müşteri yorumlarına ilk 24 saat içinde yanıt verin; algoritma hızı sever.",
+                "En popüler ürününüzü işletme açıklamasında stratejik olarak geçirin.",
+                "Bölgenizdeki rakiplerin yoğun olduğu saatlerde 'Google Post' paylaşarak öne çıkın."
+            ]
+        else:
+            # Strategies to BEAT this competitor
+            name = data.get("name", "rakip")
+            return [
+                f"{name} isimli rakibi geçmek için yorum sayınızı onların üzerine çıkarın.",
+                f"Bu rakibin en çok bahsedilen anahtar kelimelerini ({recs[1]['message'].split()[-1] if len(recs) > 1 else 'kalite'}) kendi açıklamanızda kullanın.",
+                "Rakipten daha güncel fotoğraflar yükleyerek Google'ın 'Yeni' algoritmasını tetikleyin.",
+                "Bu rakibe yorum yapan müşterilerin şikayet ettiği noktaları siz avantajınıza çevirin."
+            ]
 
     def _generate_summary(self, score: float, recommendations: list, is_my_business: bool = False) -> str:
         if is_my_business:
