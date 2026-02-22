@@ -36,7 +36,7 @@ function ConsultantContent() {
             if (!businessId) return
             try {
                 // Fetch list of businesses to find this one and its place_id
-                const response = await api.get("/businesses/")
+                const response = await api.get("/businesses")
                 const biz = response.data.find((b: any) => b.id.toString() === businessId)
 
                 if (biz) {

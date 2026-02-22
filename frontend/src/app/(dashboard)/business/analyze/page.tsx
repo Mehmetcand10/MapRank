@@ -152,7 +152,7 @@ function AnalyzeContent() {
 
                 // Check if this business is already in our tracked list
                 try {
-                    const trackedResponse = await api.get("/businesses/")
+                    const trackedResponse = await api.get("/businesses")
                     const matchedBiz = (trackedResponse.data as any[]).find((b: any) => b.google_place_id === placeId)
                     if (matchedBiz && matchedBiz.is_my_business) {
                         setIsMyBusiness(true)

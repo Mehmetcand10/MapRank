@@ -73,3 +73,6 @@ class BusinessAnalysis(BaseModel):
     market_share_estimate: Optional[float] = None
     growth_hacks: Optional[List[str]] = None
     sector_benchmarks: Optional[Dict[str, Any]] = None
+    growth_ideas: Optional[List[str]] = None
+    strategic_insights: Optional[Dict[str, Any]] = None
+    business_types: Optional[List[str]] = None
