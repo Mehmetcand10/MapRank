@@ -39,7 +39,7 @@ export default function DashboardPage() {
             try {
                 const [userRes, businessRes] = await Promise.all([
                     api.get<User>("/users/me"),
-                    api.get<Business[]>("/businesses/")
+                    api.get<Business[]>("/businesses")
                 ])
                 setUser(userRes.data)
                 setBusinesses(businessRes.data)

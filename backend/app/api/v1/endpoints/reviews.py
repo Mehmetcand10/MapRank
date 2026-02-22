@@ -6,7 +6,7 @@ from app.api import deps, auth_deps
 
 router = APIRouter()
 
-@router.get("/", response_model=List[schemas.Review])
+@router.get("", response_model=List[schemas.Review])
 def read_reviews(
     place_id: str,
     current_user: schemas.User = Depends(auth_deps.get_current_user)
