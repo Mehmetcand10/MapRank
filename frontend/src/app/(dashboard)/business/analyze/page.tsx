@@ -97,6 +97,7 @@ function AnalyzeContent() {
     const [error, setError] = useState<string | null>(null)
     const [data, setData] = useState<AnalysisResult | null>(null)
     const [isMyBusiness, setIsMyBusiness] = useState(false)
+    const [internalId, setInternalId] = useState<number | null>(null)
 
     const [searchQuery, setSearchQuery] = useState("")
     const [searchResults, setSearchResults] = useState<BusinessSearchResult[]>([])
@@ -291,6 +292,31 @@ function AnalyzeContent() {
 
     return (
         <div className="space-y-6 md:space-y-8 p-4 md:p-8 animate-in fade-in duration-500">
+            {/* Premium Strategy Room Banner */}
+            {isMyBusiness && internalId && (
+                <div
+                    onClick={() => router.push(`/business/consultant?id=${internalId}`)}
+                    className="cursor-pointer group flex flex-col md:flex-row items-center justify-between gap-6 p-6 md:p-8 bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-900 rounded-[2rem] shadow-xl hover:shadow-2xl hover:scale-[1.01] transition-all duration-300 relative overflow-hidden text-white"
+                >
+                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+                        <Icons.bot className="h-32 w-32" />
+                    </div>
+                    <div className="relative z-10 flex items-center gap-6">
+                        <div className="h-16 w-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-indigo-200">
+                            <Icons.trophy className="h-8 w-8" />
+                        </div>
+                        <div className="space-y-1">
+                            <h3 className="text-xl md:text-2xl font-black">Holdingleşme Yolunda Strateji Odasına Girin!</h3>
+                            <p className="text-indigo-100 text-sm font-medium">Sektörünüze özel milyar dolarlık iş fikirleri ve pazar domine etme planı hazır.</p>
+                        </div>
+                    </div>
+                    <Button className="relative z-10 bg-white text-indigo-900 hover:bg-slate-100 font-black rounded-2xl px-8 h-12 shadow-lg group-hover:translate-x-2 transition-transform">
+                        Odaya Geçiş Yap
+                        <Icons.arrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                </div>
+            )}
+
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 bg-white dark:bg-slate-900 p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 no-print">
                 <div className="space-y-2">

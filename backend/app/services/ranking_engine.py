@@ -288,42 +288,80 @@ class RankingEngine:
             ]
 
     def _generate_industry_ideas(self, types: list) -> list:
-        # Furniture Specific
-        if "furniture_store" in types or "home_goods_store" in types:
+        # 1. Furniture & Home Goods
+        if any(t in types for t in ["furniture_store", "home_goods_store"]):
             return [
-                "Müşterilerinizin evindeki mobilyaların yerleşimini görebileceği basit bir AR (Artırılmış Gerçeklik) filtresi oluşturun.",
-                "Eski mobilyaları yenileme (upcycling) atölyeleri düzenleyerek mağaza trafiğini artırın.",
-                "Mimarlar ve iç mimarlar için özel bir 'Sadakat Programı' başlatın; projelerinde sizin ürünlerinize yer versinler.",
-                "Kişiye özel ölçü ve tasarım hizmetini 'Ücretsiz Keşif' ile birleştirerek satış kapatma oranını artırın.",
-                "Mobilya kiralama modeli (subscription) ile kısa dönemli konaklama yerlerine (Airbnb vb.) paketler sunun.",
-                "Bölgenizdeki emlakçılarla işbirliği yaparak yeni ev alanlara 'İlk Ev Paketi' indirimleri tanımlayın."
+                "AR (Artırılmış Gerçeklik) ile evde yerleşim simülasyonu sunun.",
+                "Eski mobilya yenileme (upcycling) atölyeleri düzenleyerek trafik çekin.",
+                "Mimarlar için özel B2B sadakat ve komisyon programı başlatın.",
+                "Kişiye özel ölçü ve 'Ücretsiz Keşif' hizmetini standartlaştırın.",
+                "Mobilya kiralama modeli ile kısa dönemli konaklama yerlerine paketler sunun.",
+                "Gayrimenkul ofisleri ile ortaklık yaparak yeni ev alanlara paket indirimler tanımlayın."
             ]
-        # Restaurant/Cafe Specific
-        elif "restaurant" in types or "cafe" in types or "food" in types:
+        
+        # 2. Food & Beverage (Hamburger, Pizza, Restaurant)
+        elif any(t in types for t in ["restaurant", "cafe", "food", "bar", "bakery"]):
             return [
-                "Menünüzdeki en popüler yemeğin 'Nasıl Yapılır' videosunu çekip Google Post'ta paylaşın (Gastronomi meraklılarını çeker).",
-                "Hafta içi öğle saatleri için 'Hızlı İş Menüsü' oluşturarak beyaz yakalı trafiğini domine edin.",
-                "Yemek kartları (Sodexo, Multinet vb.) ile yapılan harcamalara özel 'Tatlı İkramı' kampanyası başlatın.",
-                "Bölgenizdeki yerel etkinliklere (festival, konser) özel 'Take-away' paketleri tasarlayın.",
-                "İşletmenizin bir köşesini 'Instagrammable' hale getirerek müşterilerin ücretsiz reklamınızı yapmasını sağlayın.",
-                "Sadık müşteriler için 'Gizli Menü' oluşturarak topluluk hissini güçlendirin."
+                "TikTok/Reels için 'Mutfak Arkası' ve 'Hazırlanış' videolarıyla viral içerik üretin.",
+                "Öğle arası için '30 Dakikada Servis' garantili iş menüleri oluşturun.",
+                "Mekanınızın bir köşesini tamamen 'Influencer' dostu bir fotoğraf alanına çevirin.",
+                "Online siparişlerde 'Yemek Kartı' entegrasyonunu ve özel mobil indirimleri öne çıkarın.",
+                "Sürpriz 'Gizli Menü' ürünleri ile topluluk bağlılığını artırın.",
+                "Yoğun olmayan saatlerde (14:00-17:00) 'Happy Hour' veya 'Mutfak Atölyesi' düzenleyin."
             ]
-        # Health/Beauty Specific
-        elif "health" in types or "beauty_salon" in types or "hair_care" in types:
+            
+        # 3. Health & Medical (Dental, Clinic, Pharmacy)
+        elif any(t in types for t in ["health", "dentist", "doctor", "hospital", "pharmacy"]):
             return [
-                "Google Haritalar üzerinden yapılan her randevu için 'Ücretsiz Cilt Analizi' veya 'Ekstra Bakım' tanımlayın.",
-                "Müşterilerinizin 'Önce/Sonra' değişimlerini (izin alarak) yüksek kaliteli video olarak paylaşın.",
-                "Kendi markanıza ait bakım ürünlerini paket olarak satışa sunarak gelir modelinizi çeşitlendirin.",
-                "Yerel influencerlar ile 'Güzellik Günü' etkinlikleri yaparak yeni kitlelere ulaşın.",
-                "Aylık üyelik modeli (Subscription) ile düzenli bakım yaptıranlara sabit fiyat garantisi verin.",
-                "Düğün ve özel gün paketlerini Google Haritalar görsellerinde 'Hizmet Broşürü' olarak öne çıkarın."
+                "Yapay zeka asistanı ile 7/24 randevu ve 'Sıkça Sorulan Sorular' botu kurun.",
+                "Hastalar için 'Dijital Tedavi Takip' portalı oluşturarak güven bağını güçlendirin.",
+                "Bölgesel olarak 'Ücretsiz Sağlık Taraması' veya 'Bilgilendirme Seminerleri' düzenleyin.",
+                "Kliniğinizin hijyen ve teknoloji standartlarını gösteren 3D sanal tur hazırlayın.",
+                "Hasta gizliliğine uygun 'Başarı Hikayeleri' ve 'Önce/Sonra' içerikleriyle sosyal kanıt oluşturun.",
+                "Diğer branşlardaki yerel doktorlarla çapraz yönlendirme (referral) ağı kurun."
             ]
-        # Default fallback
+            
+        # 4. Accomodation (Hotel, Hostel, Resort)
+        elif any(t in types for t in ["lodging", "hotel", "campground"]):
+            return [
+                "Yerel turizm rehberleri ile anlaşarak 'Gizli Rotalar' konaklama paketleri sunun.",
+                "Otel lobisini 'Co-working' alanına çevirerek dijital göçebeleri (Digital Nomads) çekin.",
+                "Hangi odanın hangi manzaraya baktığını gösteren interaktif seçim ekranı kurun.",
+                "Müşterilerinizin uçuş verileriyle entegre 'Akıllı Transfer' hizmeti başlatın.",
+                "Sürdürülebilirlik (Zero-waste) sertifikası alarak çevre duyarlı turistleri hedefleyin.",
+                "Kendi bünyenizdeki restoran/spa için dışarıdan gelenlere özel 'Day Pass' satın."
+            ]
+            
+        # 5. Services & Repair (Car Repair, Laundry, Electrician)
+        elif any(t in types for t in ["car_repair", "laundry", "electrician", "plumber", "painter"]):
+            return [
+                "Hizmet sürecini canlı izleyebilecekleri 'İş Takip' bildirim sistemi kurun.",
+                "Yıllık 'Bakım Aboneliği' (Subscription) modeli ile nakit akışını stabilize edin.",
+                "Yapılan iş için 'Dijital Garanti Belgesi' ve servis geçmişi portalı sunun.",
+                "Kapıdan alıp kapıya teslim (Valet) modelini tüm hizmetlere entegre edin.",
+                "Acil durumlar için '60 Dakikada Müdahale' premium servisi başlatın.",
+                "Müşterilerinizin ev/araç bakım zamanlarını hatırlatan otomatik SMS sistemi kurun."
+            ]
+
+        # 6. Corporate & Industry (Holding, Factory, Warehouse)
+        elif any(t in types for t in ["establishment", "factory", "warehouse", "logistics"]):
+            return [
+                "Tedarik zinciri şeffaflığı için 'Müşteri İzleme Paneli' (Dashboard) kurun.",
+                "Endüstriyel 4.0 dönüşümü için IoT tabanlı üretim izleme verilerini pazarlamada kullanın.",
+                "B2B müşterileri için 'Otomatik Yeniden Sipariş' (Auto-stock) entegrasyonu sunun.",
+                "Çalışan memnuniyetini ve İSG standartlarını öne çıkararak 'İşveren Markası' yaratın.",
+                "Sektörel 'Whitepaper' ve 'Pazar Analizleri' yayınlayarak otorite konumuna geçin.",
+                "Global pazarlar için çok dilli profesyonel bir 'E-Katalog' ve 'Teklif Sihirbazı' oluşturun."
+            ]
+
+        # Default fallback (Retail & Others)
         return [
-            "İşletmenizin önüne bir 'QR Kod' standı koyarak müşterilerin direkt Google yorum sayfasına yönlenmesini sağlayın.",
-            "Bölgenizdeki diğer (rakip olmayan) işletmelerle çapraz promosyon anlaşmaları yapın.",
-            "Sadık müşterilerinize 'Beni Öner' kampanyası ile yeni müşteri getirenlere indirim tanımlayın.",
-            "Sosyal medya mesajlarını otomatik yanıtlayan bir asistan kurarak müşteri kaybını önleyin."
+            "Mağaza içi trafiği artırmak için 'Click & Collect' (Online al, mağazadan al) modeline geçin.",
+            "QR kod ile anında Google Yorum toplama standları kurun.",
+            "Bölgedeki tamamlayıcı işletmelerle 'Hediye Çeki' işbirlikleri yapın.",
+            "Veri madenciliği ile müşterilerinize doğum günlerinde kişiselleştirilmiş teklifler gönderin.",
+            "Abonelik modeli ile düzenli ürün/hizmet alımını teşvik edin.",
+            "Yapay zeka destekli stok yönetim sistemi ile kayıpları minimize edin."
         ]
 
     def _generate_summary(self, score: float, recommendations: list, is_my_business: bool = False) -> str:

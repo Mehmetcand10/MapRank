@@ -223,18 +223,32 @@ function BusinessTable({ businesses, router, isMine }: { businesses: Business[],
                                 <td className="py-5 text-right pr-2">
                                     <div className="flex items-center justify-end gap-2">
                                         {isMine && (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    router.push(`/business/benchmarking?id=${biz.id}`)
-                                                }}
-                                                className="hover:text-amber-600 hover:bg-amber-50 border-amber-100 dark:border-amber-900 rounded-xl text-xs h-9 px-3"
-                                            >
-                                                <Icons.trending className="mr-1.5 h-3.5 w-3.5" />
-                                                Kıyasla
-                                            </Button>
+                                            <>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        router.push(`/business/consultant?id=${biz.id}`)
+                                                    }}
+                                                    className="bg-indigo-600 hover:bg-indigo-700 text-white border-none rounded-xl text-[10px] font-black h-9 px-3 shadow-md shadow-indigo-200 uppercase tracking-tighter"
+                                                >
+                                                    <Icons.bot className="mr-1.5 h-3.5 w-3.5" />
+                                                    Strateji Odası
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        router.push(`/business/benchmarking?id=${biz.id}`)
+                                                    }}
+                                                    className="hover:text-amber-600 hover:bg-amber-50 border-amber-100 dark:border-amber-900 rounded-xl text-xs h-9 px-3"
+                                                >
+                                                    <Icons.trending className="mr-1.5 h-3.5 w-3.5" />
+                                                    Kıyasla
+                                                </Button>
+                                            </>
                                         )}
                                         <Button
                                             variant="ghost"
@@ -284,17 +298,29 @@ function BusinessTable({ businesses, router, isMine }: { businesses: Business[],
                             </div>
                             <div className="flex gap-2">
                                 {isMine && (
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            router.push(`/business/benchmarking?id=${biz.id}`)
-                                        }}
-                                        className="h-8 text-[11px] border-amber-100 text-amber-600 px-3 rounded-xl"
-                                    >
-                                        Kıyasla
-                                    </Button>
+                                    <>
+                                        <Button
+                                            size="sm"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                router.push(`/business/consultant?id=${biz.id}`)
+                                            }}
+                                            className="h-8 text-[10px] bg-indigo-600 text-white font-black px-3 rounded-xl shadow-lg shadow-indigo-200"
+                                        >
+                                            Strateji
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                router.push(`/business/benchmarking?id=${biz.id}`)
+                                            }}
+                                            className="h-8 text-[11px] border-amber-100 text-amber-600 px-3 rounded-xl"
+                                        >
+                                            Kıyasla
+                                        </Button>
+                                    </>
                                 )}
                                 <Button size="sm" className="h-8 text-[11px] bg-blue-600 px-3 rounded-xl">
                                     Analiz
