@@ -37,16 +37,25 @@ class GoogleMapsService:
         Fetches detailed information about a specific place.
         """
         try:
-            # Fields to retrieve to save costs/latency
+            # Fields to retrieve - 'types' is correct, not 'type'
             fields = ['name', 'formatted_address', 'formatted_phone_number', 
                       'rating', 'user_ratings_total', 'reviews', 'website', 
-                      'geometry', 'photos', 'business_status', 'type', 'opening_hours']
+                      'geometry', 'photos', 'business_status', 'types', 'opening_hours']
             
             details = self.client.place(place_id=place_id, fields=fields)
             
+            if details.get('status') == 'OK':
+                return details.get('result', {})
+                
+            # Fallback if specific fields fail
+            print(f"Warning: Google Details Status: {details.get('status')}. Retrying without fields...")
+            details = self.client.place(place_id=place_id)
             return details.get('result', {})
+            
         except Exception as e:
-            print(f"Google API Error (get_place_details): {e}")
+            import traceback
+            print(f"Google API Error (get_place_details): {str(e)}")
+            print(traceback.format_exc())
             return None
 
     def search_nearby(self, location: Dict[str, float], keyword: str = None, type: str = None, radius: int = 1500) -> List[Dict[str, Any]]:
