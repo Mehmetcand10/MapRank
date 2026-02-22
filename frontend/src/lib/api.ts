@@ -21,4 +21,22 @@ api.interceptors.request.use(
     }
 );
 
+// Add interceptor for 401/403 errors
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401 || error.response?.status === 403) {
+            console.warn("Auth error detected, clearing token...");
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('token');
+                // Optional: Redirect to login if not already there
+                if (!window.location.pathname.startsWith('/login')) {
+                    window.location.href = '/login';
+                }
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export default api;

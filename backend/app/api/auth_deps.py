@@ -24,10 +24,26 @@ def get_current_user(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
         )
         token_data = TokenPayload(**payload)
-    except (JWTError, ValidationError):
+    except JWTError:
+        import logging
+        logging.error(f"JWT Decode Error. Token snippet: {token[:10]}...")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Could not validate credentials",
+            detail="Could not validate credentials: JWT Decode Error",
+        )
+    except ValidationError as e:
+        import logging
+        logging.error(f"Token Validation Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Could not validate credentials: {str(e)}",
+        )
+    except Exception as e:
+        import logging
+        logging.error(f"Unexpected Auth Error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials: Unexpected Error",
         )
     user = UserService().get(db, user_id=token_data.sub)
     if not user:

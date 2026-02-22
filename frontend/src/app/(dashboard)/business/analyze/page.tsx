@@ -18,6 +18,15 @@ interface Recommendation {
     message: string
 }
 
+interface BusinessSearchResult {
+    google_place_id: string
+    name: string
+    address: string
+    rating: number
+    user_ratings_total: number
+    maprank_score?: number
+}
+
 interface AnalysisResult {
     score: number
     metrics: {
@@ -79,12 +88,30 @@ function AnalyzeContent() {
     const placeId = searchParams.get("place_id")
     const name = searchParams.get("name")
 
-    useEffect(() => {
-        if (!placeId) {
-            setError("İşletme kimliği (Place ID) eksik. Lütfen aramayı tekrar yapın.")
-            setLoading(false)
-            return
+    const [searchQuery, setSearchQuery] = useState("")
+    const [searchResults, setSearchResults] = useState<BusinessSearchResult[]>([])
+    const [searchLoading, setSearchLoading] = useState(false)
+
+    const handleSearch = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!searchQuery.trim()) return
+        setSearchLoading(true)
+        try {
+            const response = await api.get<BusinessSearchResult[]>(`/businesses/search?query=${encodeURIComponent(searchQuery)}&location=Turkey`)
+            setSearchResults(response.data)
+        } catch (err: any) {
+            toast({
+                title: "Arama Hatası",
+                description: "İşletme aranırken bir sorun oluştu.",
+                variant: "destructive"
+            })
+        } finally {
+            setSearchLoading(false)
         }
+    }
+
+    useEffect(() => {
+        if (!placeId) return
 
         const fetchData = async () => {
             try {
@@ -155,6 +182,68 @@ function AnalyzeContent() {
                     <p className="text-lg font-medium text-foreground">Yapay Zeka Analiz Ediyor...</p>
                     <p className="text-sm text-muted-foreground">Rakipler ve pazar verileri taranıyor.</p>
                 </div>
+            </div>
+        )
+    }
+
+    if (!placeId) {
+        return (
+            <div className="space-y-8 p-4 md:p-8 animate-in fade-in duration-500">
+                <div className="text-center space-y-2 mb-10">
+                    <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">İşletme Analizi</h1>
+                    <p className="text-slate-500 max-w-lg mx-auto">Analiz etmek veya takip etmek istediğiniz işletmeyi arayın.</p>
+                </div>
+
+                <MotionCard className="max-w-2xl mx-auto border-none shadow-xl bg-white dark:bg-slate-900 p-8">
+                    <form onSubmit={handleSearch} className="flex gap-4">
+                        <div className="relative flex-1">
+                            <Icons.search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="Örn: Kebapçı Hamdi Beşiktaş"
+                                className="w-full pl-12 pr-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 outline-none font-medium"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                        <Button type="submit" disabled={searchLoading} className="rounded-2xl bg-blue-600 hover:bg-blue-700 px-8 py-6 h-auto">
+                            {searchLoading ? <Icons.spinner className="h-5 w-5 animate-spin" /> : "Ara"}
+                        </Button>
+                    </form>
+
+                    {searchResults.length > 0 && (
+                        <div className="mt-8 space-y-4">
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-2">Sonuçlar</p>
+                            {searchResults.map((biz) => (
+                                <div
+                                    key={biz.google_place_id}
+                                    onClick={() => router.push(`/business/analyze?place_id=${biz.google_place_id}&name=${encodeURIComponent(biz.name)}`)}
+                                    className="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 cursor-pointer transition-all group"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 font-bold group-hover:scale-110 transition-transform">
+                                            {biz.name[0]}
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-slate-900 leading-tight">{biz.name}</p>
+                                            <p className="text-xs text-slate-500 truncate max-w-[250px]">{biz.address}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <div className="text-right">
+                                            <div className="flex items-center gap-1 text-amber-500">
+                                                <Icons.star className="h-3 w-3 fill-current" />
+                                                <span className="text-sm font-bold">{biz.rating}</span>
+                                            </div>
+                                            <p className="text-[10px] text-slate-400">{biz.user_ratings_total} yorum</p>
+                                        </div>
+                                        <Icons.arrowRight className="h-5 w-5 text-slate-300 group-hover:text-blue-600 translate-x-0 group-hover:translate-x-1 transition-all" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </MotionCard>
             </div>
         )
     }
