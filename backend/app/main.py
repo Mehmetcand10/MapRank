@@ -9,7 +9,8 @@ import time
 
 from app.core.config import settings
 from app.api.v1.api import api_router
-from app.core.database import get_db
+from app.core.database import get_db, engine, Base
+from app.models import User, Tenant, Business, Keyword, Ranking, Subscription, UsageLog # Ensure all models are imported for create_all
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -87,6 +88,19 @@ def health_tables_check(db: Session = Depends(get_db)):
         return JSONResponse(
             status_code=500,
             content={"status": "error", "error": str(e), "version": "v7"}
+        )
+
+@app.get("/health/migrate")
+def health_migrate():
+    try:
+        logger.info("Running manual migration (create_all)...")
+        Base.metadata.create_all(bind=engine)
+        return {"status": "ok", "message": "Database tables created successfully", "version": "v7"}
+    except Exception as e:
+        logger.error(f"Migration Failed: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": str(e), "version": "v7"}
         )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
