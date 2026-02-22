@@ -55,3 +55,8 @@ class BusinessAnalysis(BaseModel):
     validation_status: str = "Unknown" # Claimed, Unclaimed, etc.
     competitors: List[Dict[str, Any]] = []
     is_tracked: bool = False
+    # Premium Fields
+    sentiment_trends: Optional[List[Dict[str, Any]]] = None
+    visibility_score: Optional[float] = None
+    market_share_estimate: Optional[float] = None
+    growth_hacks: Optional[List[str]] = None

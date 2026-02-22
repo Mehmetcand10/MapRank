@@ -31,7 +31,7 @@ app.add_middleware(
 )
 
 # Global Version Control
-APP_VERSION = "v15-FINAL-STANDARDIZATION"
+APP_VERSION = "v16-PREMIUM"
 
 @app.middleware("http")
 async def log_and_cors_failsafe(request: Request, call_next):
@@ -65,8 +65,8 @@ def root():
     return {"message": "MapRank API is alive", "version": APP_VERSION}
 
 @app.get("/health")
-@app.get("/health/v15")
-def health_v15():
+@app.get("/health/v16")
+def health_v16():
     return {"status": "ok", "version": APP_VERSION}
 
 @app.get("/health/db")
@@ -136,5 +136,3 @@ async def global_exception_handler(request: Request, exc: Exception):
             "version": APP_VERSION
         }
     )
-
-# REMOVED CATCH-ALL TO AVOID MASKING 404s during stabilization

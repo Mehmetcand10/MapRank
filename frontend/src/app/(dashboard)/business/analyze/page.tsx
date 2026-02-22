@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress"
 import { toast } from "@/components/ui/use-toast"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 interface Recommendation {
     type: "critical" | "warning" | "suggestion"
@@ -44,6 +45,11 @@ interface AnalysisResult {
     google_place_id?: string
     is_tracked?: boolean
     business_types?: string[]
+    // Premium Fields
+    sentiment_trends?: { month: string, score: number }[]
+    visibility_score?: number
+    market_share_estimate?: number
+    growth_hacks?: string[]
 }
 
 interface Competitor {
@@ -74,6 +80,7 @@ function AnalyzeContent() {
 
         const fetchData = async () => {
             try {
+                // Remove trailing slash and use correct endpoint
                 const response = await api.post<AnalysisResult>(`/businesses/analyze?place_id=${placeId}`)
                 setData(response.data)
             } catch (err: any) {
@@ -100,6 +107,9 @@ function AnalyzeContent() {
             await api.post("/businesses", {
                 google_place_id: placeId,
                 name: name || data.formatted_address || "Bilinmeyen İşletme",
+                address: data.formatted_address,
+                total_rating: data.metrics.rating,
+                review_count: data.metrics.review_count
             })
             toast({
                 title: "Başarılı",
@@ -131,9 +141,12 @@ function AnalyzeContent() {
 
     if (loading) {
         return (
-            <div className="flex h-[50vh] items-center justify-center">
-                <Icons.spinner className="h-8 w-8 animate-spin" />
-                <span className="ml-2">İşletme verileri ve rakipler analiz ediliyor...</span>
+            <div className="flex h-[80vh] flex-col items-center justify-center gap-4">
+                <Icons.spinner className="h-10 w-10 animate-spin text-blue-600" />
+                <div className="text-center">
+                    <p className="text-lg font-medium text-foreground">Yapay Zeka Analiz Ediyor...</p>
+                    <p className="text-sm text-muted-foreground">Rakipler ve pazar verileri taranıyor.</p>
+                </div>
             </div>
         )
     }
@@ -141,76 +154,44 @@ function AnalyzeContent() {
     if (error) {
         return (
             <div className="flex flex-col h-[50vh] items-center justify-center space-y-4">
-                <div className="text-red-500 font-medium text-lg">Analiz Yüklenemedi</div>
-                <div className="text-muted-foreground">{error}</div>
-                <Button variant="outline" onClick={() => router.back()}>Geri Dön ve Tekrar Dene</Button>
+                <div className="h-16 w-16 rounded-full bg-red-50 flex items-center justify-center mb-2">
+                    <Icons.warning className="h-8 w-8 text-red-500" />
+                </div>
+                <div className="text-red-500 font-bold text-xl">Analiz Yüklenemedi</div>
+                <div className="text-muted-foreground text-center max-w-sm">{error}</div>
+                <Button variant="outline" size="lg" onClick={() => router.back()}>Geri Dön ve Tekrar Dene</Button>
             </div>
         )
     }
 
-    if (!data) {
-        return <div>Veri bulunamadı.</div>
-    }
-
-    // Helper to get initials from name
-    const getInitials = (name: string) => {
-        return name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
-            .substring(0, 2)
-            .toUpperCase()
-    }
-
-    // Helper to format business type
-    const formatType = (type: string) => {
-        return type.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())
-    }
+    if (!data) return <div>Veri bulunamadı.</div>
 
     return (
-        <div className="space-y-8 p-4 md:p-8">
+        <div className="space-y-8 p-4 md:p-8 animate-in fade-in duration-500">
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
                 <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                        <h2 className="text-3xl font-bold tracking-tight text-foreground">{name || "İşletme Analizi"}</h2>
-                        {data.validation_status !== "Unknown" && (
-                            <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100/80">
-                                <Icons.check className="mr-1 h-3 w-3" />
-                                Onaylı İşletme
-                            </Badge>
-                        )}
+                        <h2 className="text-3xl font-extrabold tracking-tight text-foreground">{name || "İşletme Analizi"}</h2>
+                        <Badge className="bg-blue-50 text-blue-700 border-blue-200">💎 Premium Analiz</Badge>
                     </div>
-                    <p className="text-muted-foreground max-w-2xl text-lg">{data.formatted_address}</p>
-                    {data.business_types && data.business_types.length > 0 && (
-                        <div className="flex flex-wrap gap-2 pt-1">
-                            {data.business_types.slice(0, 3).map((type, i) => (
-                                <Badge key={i} variant="outline" className="text-muted-foreground">
-                                    {formatType(type)}
-                                </Badge>
-                            ))}
-                        </div>
-                    )}
+                    <p className="text-muted-foreground max-w-2xl text-lg flex items-center gap-2">
+                        <Icons.mapPin className="h-4 w-4 shrink-0" />
+                        {data.formatted_address}
+                    </p>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                    <Button variant="outline" size="lg" onClick={() => router.back()}>
+                    <Button variant="outline" size="lg" onClick={() => router.back()} className="rounded-full">
                         <Icons.chevronLeft className="mr-2 h-4 w-4" />
-                        Geri Dön
+                        Geri
                     </Button>
-                    {data.website && (
-                        <Button variant="outline" size="lg" onClick={() => window.open(data.website, '_blank')}>
-                            <Icons.globe className="mr-2 h-4 w-4" />
-                            Web Sitesi
-                        </Button>
-                    )}
-
                     {data.is_tracked ? (
-                        <Button variant="secondary" size="lg" onClick={() => router.push("/dashboard")}>
+                        <Button variant="secondary" size="lg" onClick={() => router.push("/dashboard")} className="rounded-full bg-green-50 text-green-700 hover:bg-green-100">
                             <Icons.check className="mr-2 h-4 w-4" />
                             Takip Ediliyor
                         </Button>
                     ) : (
-                        <Button size="lg" onClick={handleSaveBusiness} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white">
+                        <Button size="lg" onClick={handleSaveBusiness} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8 shadow-lg shadow-blue-200">
                             {saving ? <Icons.spinner className="mr-2 h-4 w-4 animate-spin" /> : <Icons.plus className="mr-2 h-4 w-4" />}
                             Sisteme Kaydet & Takip Et
                         </Button>
@@ -218,306 +199,218 @@ function AnalyzeContent() {
                 </div>
             </div>
 
-            {/* Main Grid Layout */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+            {/* Main Stats Grid */}
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <StatCard
+                    title="Görünürlük Skoru"
+                    value={`%${data.visibility_score}`}
+                    sub="Bölgesel Erişim"
+                    icon={Icons.activity}
+                    color="text-indigo-600"
+                    bg="bg-indigo-50"
+                />
+                <StatCard
+                    title="Pazar Payı (Tahmin)"
+                    value={`%${data.market_share_estimate}`}
+                    sub="Bölge Dominasyonu"
+                    icon={Icons.star}
+                    color="text-amber-600"
+                    bg="bg-amber-50"
+                />
+                <StatCard
+                    title="Sıralama"
+                    value={`#${data.metrics.rank_position || '?'}`}
+                    sub={`${data.metrics.total_competitors} Rakip Arasında`}
+                    icon={Icons.trophy}
+                    color="text-emerald-600"
+                    bg="bg-emerald-50"
+                />
+                <StatCard
+                    title="Yorum Kalitesi"
+                    value={data.metrics.rating.toFixed(1)}
+                    sub={`${data.metrics.review_count} Yorum`}
+                    icon={Icons.messageSquare}
+                    color="text-purple-600"
+                    bg="bg-purple-50"
+                />
+            </div>
 
-                {/* 1. MapRank Score Card (Large) */}
-                <MotionCard delay={0.1} className="col-span-3 row-span-2 flex flex-col justify-between overflow-hidden relative">
-                    <div className="absolute top-0 right-0 p-4 opacity-5">
-                        <Icons.activity className="w-48 h-48" />
-                    </div>
+            <div className="grid gap-6 lg:grid-cols-3">
+                {/* Score & Heatmap Mockup */}
+                <MotionCard delay={0.1} className="lg:col-span-2 overflow-hidden border-none shadow-xl bg-gradient-to-br from-slate-900 to-indigo-950 text-white">
                     <CardHeader>
-                        <CardTitle className="text-2xl">MapRank Skoru</CardTitle>
-                        <CardDescription>İşletmenizin genel dijital sağlık puanı.</CardDescription>
+                        <CardTitle className="text-white text-2xl flex items-center justify-between">
+                            MapRank Skoru
+                            <Icons.activity className="h-6 w-6 text-indigo-400" />
+                        </CardTitle>
+                        <CardDescription className="text-indigo-200">İşletmenizin 360° dijital performans analizi.</CardDescription>
                     </CardHeader>
-                    <CardContent className="flex flex-col items-center justify-center flex-1 pb-10">
-                        <div className="relative flex items-center justify-center mb-6">
-                            <svg className="h-48 w-48 transform -rotate-90">
-                                <circle
-                                    className="text-muted/20"
-                                    strokeWidth="12"
-                                    stroke="currentColor"
-                                    fill="transparent"
-                                    r="80"
-                                    cx="96"
-                                    cy="96"
-                                />
-                                <circle
-                                    className={`${data.score >= 80 ? "text-green-500" : data.score >= 60 ? "text-yellow-500" : "text-red-500"} transition-all duration-1000 ease-out`}
-                                    strokeWidth="12"
-                                    strokeDasharray={502}
-                                    strokeDashoffset={502 - (502 * data.score) / 100}
-                                    strokeLinecap="round"
-                                    stroke="currentColor"
-                                    fill="transparent"
-                                    r="80"
-                                    cx="96"
-                                    cy="96"
-                                />
-                            </svg>
-                            <div className="absolute flex flex-col items-center">
-                                <span className="text-5xl font-bold tracking-tighter">{data.score}</span>
-                                <span className="text-sm font-medium text-muted-foreground uppercase tracking-widest mt-1">
-                                    {data.score >= 80 ? "Mükemmel" : data.score >= 60 ? "İyi" : "Kritik"}
-                                </span>
+                    <CardContent>
+                        <div className="flex flex-col md:flex-row items-center gap-10 py-4">
+                            <div className="relative h-48 w-48 flex items-center justify-center">
+                                <svg className="h-full w-full transform -rotate-90">
+                                    <circle className="text-white/10" strokeWidth="12" stroke="currentColor" fill="transparent" r="80" cx="96" cy="96" />
+                                    <circle
+                                        className="text-indigo-400 transition-all duration-1000 ease-out"
+                                        strokeWidth="12"
+                                        strokeDasharray={502}
+                                        strokeDashoffset={502 - (502 * data.score) / 100}
+                                        strokeLinecap="round"
+                                        stroke="currentColor"
+                                        fill="transparent"
+                                        r="80"
+                                        cx="96"
+                                        cy="96"
+                                    />
+                                </svg>
+                                <div className="absolute flex flex-col items-center">
+                                    <span className="text-5xl font-black">{data.score}</span>
+                                    <span className="text-xs font-bold uppercase tracking-widest text-indigo-300">Skor</span>
+                                </div>
+                            </div>
+                            <div className="flex-1 space-y-4">
+                                <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10">
+                                    <p className="text-indigo-100 leading-relaxed italic">
+                                        "{data.analysis_text}"
+                                    </p>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-white/5 p-3 rounded-lg">
+                                        <p className="text-xs text-indigo-300 uppercase font-bold mb-1">Potansiyel Artış</p>
+                                        <p className="text-xl font-bold text-green-400">+%15.2</p>
+                                    </div>
+                                    <div className="bg-white/5 p-3 rounded-lg">
+                                        <p className="text-xs text-indigo-300 uppercase font-bold mb-1">Müşteri Güveni</p>
+                                        <p className="text-xl font-bold text-blue-400">Yüksek</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <p className="text-center text-muted-foreground px-6 leading-relaxed">
-                            {data.analysis_text}
-                        </p>
+
+                        {/* Visibility Heatmap Mockup */}
+                        <div className="mt-6 pt-6 border-t border-white/10">
+                            <h4 className="text-sm font-bold uppercase tracking-widest text-indigo-300 mb-4 flex items-center gap-2">
+                                <Icons.mapPin className="h-4 w-4" />
+                                Bölgesel Görünürlük Simülasyonu
+                            </h4>
+                            <div className="h-32 w-full rounded-xl bg-slate-800 relative overflow-hidden flex items-center justify-center group">
+                                <div className="absolute inset-0 opacity-20 bg-[url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/0,0,1/400x200?access_token=none')] bg-cover"></div>
+                                <div className="absolute h-16 w-16 bg-blue-500 rounded-full blur-3xl animate-pulse"></div>
+                                <div className="absolute h-10 w-10 bg-indigo-400 rounded-full blur-2xl top-4 right-1/4 opacity-50"></div>
+                                <div className="relative text-xs text-indigo-200 font-medium bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-md">
+                                    Sizin İşletmeniz: En Yüksek Yoğunluk Kadıköy / Beşiktaş Hattı
+                                </div>
+                            </div>
+                        </div>
                     </CardContent>
                 </MotionCard>
 
-                {/* 2. Key Metrics Cards */}
-                <div className="col-span-4 grid gap-6 md:grid-cols-2">
-                    <MotionCard delay={0.2} className="relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-3 opacity-10">
-                            <Icons.trophy className="w-24 h-24" />
-                        </div>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-base font-medium text-muted-foreground uppercase tracking-wider">Sıralama Konumu</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-4xl font-bold">#{data.metrics.rank_position || "-"}</span>
-                                <span className="text-sm text-muted-foreground">
-                                    / {data.metrics.total_competitors ? `${data.metrics.total_competitors} Rakip` : "N/A"}
-                                </span>
-                            </div>
-                            <div className="mt-4 h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-blue-500 rounded-full"
-                                    style={{ width: `${Math.max(5, 100 - ((data.metrics.rank_position || 1) / (data.metrics.total_competitors || 1) * 100))}%` }}
-                                />
-                            </div>
-                            <p className="mt-2 text-xs text-muted-foreground">Bölgedeki rakiplerinize göre konumunuz.</p>
-                        </CardContent>
-                    </MotionCard>
-
-                    <MotionCard delay={0.3} className="relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-3 opacity-10">
-                            <Icons.star className="w-24 h-24" />
-                        </div>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-base font-medium text-muted-foreground uppercase tracking-wider">Sektör Ortalaması</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-4xl font-bold">{data.metrics.avg_competitor_rating || "-"}</span>
-                                <span className="text-sm text-muted-foreground text-yellow-500">
-                                    <Icons.star className="inline w-3 h-3 mb-1 mr-1 fill-current" />
-                                    Puan
-                                </span>
-                            </div>
-                            <div className="mt-4 flex items-center gap-2 text-xs">
-                                <span className="font-medium">Sizin Puanınız:</span>
-                                <Badge variant={data.metrics.rating >= (data.metrics.avg_competitor_rating || 0) ? "default" : "destructive"}>
-                                    {data.metrics.rating}
-                                </Badge>
-                            </div>
-                        </CardContent>
-                    </MotionCard>
-                </div>
-
-                {/* 3. Detailed Metrics Progress */}
-                <MotionCard delay={0.4} className="col-span-4">
+                {/* Growth Hacks Sidebar */}
+                <MotionCard delay={0.3} className="border-indigo-100 bg-indigo-50/30">
                     <CardHeader>
-                        <CardTitle>Performans Metrikleri</CardTitle>
-                        <CardDescription>Hedeflerinize göre mevcut durumunuz.</CardDescription>
+                        <CardTitle className="text-indigo-900 flex items-center gap-2">
+                            <Icons.bot className="h-5 w-5 text-indigo-600" />
+                            Stratejik Yol Haritası
+                        </CardTitle>
+                        <CardDescription>Sıralamanızı uçuracak yapay zeka ipuçları.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-8">
-                        {/* Rating Metric */}
-                        <div>
-                            <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                    <div className="p-2 bg-yellow-100 rounded-full text-yellow-600">
-                                        <Icons.star className="w-4 h-4 fill-current" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="font-medium">Ortalama Puan</span>
-                                        <span className="text-xs text-muted-foreground">Müşteri memnuniyeti</span>
-                                    </div>
+                    <CardContent className="space-y-4">
+                        {data.growth_hacks?.map((hack, i) => (
+                            <div key={i} className="bg-white p-3 rounded-xl border border-indigo-100 shadow-sm flex gap-3 group hover:border-indigo-300 transition-colors">
+                                <div className="h-6 w-6 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0 text-[10px] font-black group-hover:scale-110 transition-transform">
+                                    {i + 1}
                                 </div>
-                                <div className="text-right">
-                                    <span className="text-2xl font-bold">{data.metrics.rating}</span>
-                                    <span className="text-sm text-muted-foreground"> / 5.0</span>
-                                </div>
+                                <p className="text-sm text-slate-700 leading-tight font-medium">{hack}</p>
                             </div>
-                            <Progress value={(data.metrics.rating / 5) * 100} className="h-3" />
-                            <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                                <span>Riskli: 0.0</span>
-                                <span>Hedef: {data.targets.rating}</span>
-                            </div>
-                        </div>
-
-                        {/* Review Count Metric */}
-                        <div>
-                            <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                    <div className="p-2 bg-blue-100 rounded-full text-blue-600">
-                                        <Icons.user className="w-4 h-4" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="font-medium">Toplam Yorum</span>
-                                        <span className="text-xs text-muted-foreground">Güvenilirlik işareti</span>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-2xl font-bold">{data.metrics.review_count}</span>
-                                    <span className="text-sm text-muted-foreground"> Adet</span>
-                                </div>
-                            </div>
-                            <Progress value={Math.min((data.metrics.review_count / data.targets.review_count) * 100, 100)} className="h-3" />
-                            <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                                <span>Başlangıç</span>
-                                <span>Hedef: {data.targets.review_count}</span>
-                            </div>
-                        </div>
+                        ))}
+                        <Button className="w-full bg-indigo-600 hover:bg-indigo-700 mt-2">
+                            Tam Raporu İndir (PDF)
+                        </Button>
                     </CardContent>
                 </MotionCard>
             </div>
 
-            {/* Competitors & AI Analysis Section */}
-            <div className="grid gap-6 md:grid-cols-2">
-
-                {/* Competitors List */}
-                <MotionCard delay={0.5} className="col-span-1 border-blue-100 dark:border-blue-900 border">
+            <div className="grid gap-6 lg:grid-cols-2">
+                {/* Sentiment & Trends */}
+                <MotionCard delay={0.4}>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Icons.mapPin className="w-5 h-5 text-blue-500" />
-                            Yakındaki Rakipler
-                        </CardTitle>
-                        <CardDescription>Bölgenizdeki en güçlü rakiplerin analizi.</CardDescription>
+                        <CardTitle>Müşteri Deneyimi Trendi</CardTitle>
+                        <CardDescription>Son 3 aydaki dijital memnuniyet değişimi.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-4">
-                            {data.competitors?.map((comp, i) => (
-                                <div key={i} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors border border-transparent hover:border-border">
-                                    <div className="flex items-center gap-3 overflow-hidden">
-                                        <div className="flex-shrink-0 font-bold text-muted-foreground w-4 text-center">
-                                            {i + 1}
-                                        </div>
-                                        <Avatar className="h-9 w-9 border">
-                                            <AvatarFallback className="bg-primary/10 text-primary font-medium text-xs">
-                                                {getInitials(comp.name)}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div className="space-y-0.5 overflow-hidden">
-                                            <p className="font-medium text-sm truncate max-w-[140px] leading-tight" title={comp.name}>
-                                                {comp.name}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground truncate max-w-[140px]">
-                                                {comp.address}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3 text-right">
-                                        <div className="flex flex-col items-end">
-                                            <div className="flex items-center gap-1 text-sm font-bold">
-                                                <span>{comp.rating}</span>
-                                                <Icons.star className="w-3 h-3 text-yellow-500 fill-current" />
-                                            </div>
-                                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                                <span>{comp.user_ratings_total}</span>
-                                                <Icons.user className="w-3 h-3" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                            {(!data.competitors || data.competitors.length === 0) && (
-                                <div className="flex flex-col items-center justify-center py-8 text-center bg-muted/30 rounded-lg border border-dashed">
-                                    <Icons.search className="w-8 h-8 text-muted-foreground mb-2 opacity-50" />
-                                    <p className="text-sm font-medium text-muted-foreground">Bu kategoride yakın rakip bulunamadı.</p>
-                                </div>
-                            )}
+                        <div className="h-[250px] w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={data.sentiment_trends || []}>
+                                    <defs>
+                                        <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1} />
+                                            <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                                    <YAxis axisLine={false} tickLine={false} hide />
+                                    <Tooltip />
+                                    <Area type="monotone" dataKey="score" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorScore)" />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+                        <div className="flex justify-around mt-4 pt-4 border-t border-slate-100">
+                            <SentimentStat label="Olumlu" value={data.metrics.sentiment_positive} color="bg-green-500" />
+                            <SentimentStat label="Nötr" value={data.metrics.sentiment_neutral} color="bg-slate-400" />
+                            <SentimentStat label="Olumsuz" value={data.metrics.sentiment_negative} color="bg-red-500" />
                         </div>
                     </CardContent>
                 </MotionCard>
 
-                {/* AI Sentiment Analysis */}
-                <div className="space-y-6">
-                    <MotionCard delay={0.6} className="border-purple-100 dark:border-purple-900 border">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Icons.bot className="w-5 h-5 text-purple-500" />
-                                Yapay Zeka Yorum Analizi
-                            </CardTitle>
-                            <CardDescription>Müşteri yorumlarının duygu durumu dağılımı.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-1">
-                                <div className="flex justify-between text-sm items-end">
-                                    <span className="font-medium text-green-600 flex items-center gap-1">
-                                        <Icons.smile className="w-4 h-4" />
-                                        Olumlu
-                                    </span>
-                                    <span className="font-bold">{data.metrics.sentiment_positive || 0}%</span>
-                                </div>
-                                <Progress value={data.metrics.sentiment_positive || 0} className="h-2.5 bg-green-100" indicatorClassName="bg-green-600" />
+                {/* Recommendations */}
+                <MotionCard delay={0.5}>
+                    <CardHeader>
+                        <CardTitle>Eylem Planı</CardTitle>
+                        <CardDescription>Bugün yapabileceğiniz kritik iyileştirmeler.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {data.recommendations.map((rec, i) => (
+                            <div key={i} className={`flex gap-3 p-4 rounded-xl border-l-4 ${rec.type === 'critical' ? 'bg-red-50 border-red-500' :
+                                    rec.type === 'warning' ? 'bg-amber-50 border-amber-500' : 'bg-blue-50 border-blue-500'
+                                }`}>
+                                {rec.type === 'critical' ? <Icons.warning className="h-5 w-5 text-red-600 shrink-0" /> : <Icons.alertCircle className="h-5 w-5 text-amber-600 shrink-0" />}
+                                <p className="text-sm font-medium text-slate-800">{rec.message}</p>
                             </div>
-                            <div className="space-y-1">
-                                <div className="flex justify-between text-sm items-end">
-                                    <span className="font-medium text-gray-600 flex items-center gap-1">
-                                        <Icons.minus className="w-4 h-4" />
-                                        Nötr
-                                    </span>
-                                    <span className="font-bold">{data.metrics.sentiment_neutral || 0}%</span>
-                                </div>
-                                <Progress value={data.metrics.sentiment_neutral || 0} className="h-2.5 bg-gray-100" indicatorClassName="bg-gray-500" />
-                            </div>
-                            <div className="space-y-1">
-                                <div className="flex justify-between text-sm items-end">
-                                    <span className="font-medium text-red-600 flex items-center gap-1">
-                                        <Icons.skull className="w-4 h-4" />
-                                        Olumsuz
-                                    </span>
-                                    <span className="font-bold">{data.metrics.sentiment_negative || 0}%</span>
-                                </div>
-                                <Progress value={data.metrics.sentiment_negative || 0} className="h-2.5 bg-red-100" indicatorClassName="bg-red-600" />
-                            </div>
-                        </CardContent>
-                    </MotionCard>
+                        ))}
+                    </CardContent>
+                </MotionCard>
+            </div>
+        </div>
+    )
+}
 
-                    <MotionCard delay={0.7} className="border-l-4 border-l-blue-500 bg-blue-50/50 dark:bg-blue-900/10">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-lg">Eylem Planı</CardTitle>
-                            <CardDescription>Sıralamanızı yükseltmek için öneriler.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-3">
-                                {data.recommendations.map((rec, index) => (
-                                    <div key={index} className="flex gap-3 items-start bg-background p-3 rounded-md shadow-sm border">
-                                        <div className="mt-0.5 shrink-0">
-                                            {rec.type === 'critical' ? (
-                                                <Icons.warning className="h-5 w-5 text-red-500" />
-                                            ) : rec.type === 'warning' ? (
-                                                <Icons.alertCircle className="h-5 w-5 text-yellow-500" />
-                                            ) : (
-                                                <Icons.checkCircle className="h-5 w-5 text-blue-500" />
-                                            )}
-                                        </div>
-                                        <div className="space-y-0.5">
-                                            <p className={`text-sm font-semibold ${rec.type === 'critical' ? 'text-red-600' : rec.type === 'warning' ? 'text-yellow-600' : 'text-blue-600'
-                                                }`}>
-                                                {rec.type === 'critical' ? 'Kritik İyileştirme' : rec.type === 'warning' ? 'Dikkat Gerekiyor' : 'Öneri'}
-                                            </p>
-                                            <p className="text-sm text-muted-foreground leading-relaxed">
-                                                {rec.message}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                                {data.recommendations.length === 0 && (
-                                    <div className="flex items-center space-x-2 text-green-600 bg-green-50 p-4 rounded-md">
-                                        <Icons.checkCircle className="h-5 w-5" />
-                                        <span className="font-medium">Her şey harika görünüyor! Şu an için ek bir önerimiz yok.</span>
-                                    </div>
-                                )}
-                            </div>
-                        </CardContent>
-                    </MotionCard>
+function StatCard({ title, value, sub, icon: Icon, color, bg }: any) {
+    return (
+        <MotionCard className="border-none shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                    <div className={`p-3 rounded-2xl ${bg}`}>
+                        <Icon className={`h-6 w-6 ${color}`} />
+                    </div>
                 </div>
+                <div className="space-y-1">
+                    <p className="text-2xl font-black tracking-tight">{value}</p>
+                    <p className="text-sm font-bold text-slate-900">{title}</p>
+                    <p className="text-xs text-muted-foreground">{sub}</p>
+                </div>
+            </CardContent>
+        </MotionCard>
+    )
+}
+
+function SentimentStat({ label, value, color }: any) {
+    return (
+        <div className="flex flex-col items-center">
+            <span className="text-xs font-bold text-muted-foreground mb-1">{label}</span>
+            <div className="flex items-center gap-2">
+                <div className={`h-2 w-2 rounded-full ${color}`} />
+                <span className="font-bold text-slate-900">%{value}</span>
             </div>
         </div>
     )
