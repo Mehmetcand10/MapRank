@@ -38,21 +38,29 @@ async def log_request_time(request: Request, call_next):
     start_time = time.time()
     try:
         response = await call_next(request)
-        process_time = (time.time() - start_time) * 1000
-        if not request.url.path.startswith("/health"):
-            logger.info(f"[{request.method}] {request.url.path} - {response.status_code} ({process_time:.2f}ms)")
-        return response
     except Exception as e:
         logger.error(f"Uncaught MiddleWare Exception: {str(e)}")
         logger.error(traceback.format_exc())
-        return JSONResponse(
+        response = JSONResponse(
             status_code=500,
             content={
+                "status": "error",
                 "detail": "Internal Server Error",
                 "message": str(e),
                 "version": APP_VERSION
             }
         )
+    
+    # Brute-force CORS for all responses (including errors)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    
+    process_time = (time.time() - start_time) * 1000
+    if not request.url.path.startswith("/health"):
+        logger.info(f"[{request.method}] {request.url.path} - {response.status_code} ({process_time:.2f}ms)")
+    
+    return response
 
 @app.get("/")
 def root():
