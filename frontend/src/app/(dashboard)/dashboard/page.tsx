@@ -55,15 +55,15 @@ export default function DashboardPage() {
         : 0
 
     return (
-        <div className="space-y-8 p-4 md:p-8 animate-in fade-in duration-500">
+        <div className="space-y-6 p-4 md:p-8 animate-in fade-in duration-500">
             {/* Enterprise Header */}
             <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-                <div>
-                    <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Genel Bakış</h1>
-                    <p className="text-slate-500 font-medium">İşletmelerinizin dijital performans merkezi.</p>
+                <div className="space-y-1">
+                    <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white">Genel Bakış</h1>
+                    <p className="text-sm md:text-base text-slate-500 font-medium text-balance">İşletmelerinizin dijital performans merkezi.</p>
                 </div>
-                <div className="flex gap-3">
-                    <Button onClick={() => router.push("/business/analyze")} className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6 shadow-lg shadow-blue-200">
+                <div className="w-full md:w-auto">
+                    <Button onClick={() => router.push("/business/analyze")} className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-2xl md:rounded-full px-6 py-6 md:py-2 shadow-lg shadow-blue-200 transition-all active:scale-95">
                         <Icons.plus className="mr-2 h-4 w-4" />
                         Yeni İşletme Analiz Et
                     </Button>
@@ -119,11 +119,11 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                     {businesses.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-                            <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center">
-                                <Icons.store className="h-10 w-10 text-slate-300" />
+                        <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+                            <div className="h-16 w-16 md:h-20 md:w-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center">
+                                <Icons.store className="h-8 w-8 md:h-10 md:w-10 text-slate-300" />
                             </div>
-                            <div className="space-y-1">
+                            <div className="space-y-1 px-4">
                                 <h3 className="text-lg font-bold">Henüz İşletme Yok</h3>
                                 <p className="text-sm text-slate-500">İlk işletmenizi analiz edip takip etmeye başlayın.</p>
                             </div>
@@ -132,72 +132,110 @@ export default function DashboardPage() {
                             </Button>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="border-b border-slate-50">
-                                    <tr className="text-[11px] font-black uppercase text-slate-400 tracking-wider">
-                                        <th className="pb-4 pl-2">İşletme Adı</th>
-                                        <th className="pb-4">MapRank Skoru</th>
-                                        <th className="pb-4">Puan / Yorum</th>
-                                        <th className="pb-4">Durum</th>
-                                        <th className="pb-4 text-right pr-2">Aksiyon</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-50">
-                                    {businesses.map((biz) => (
-                                        <tr key={biz.id} className="group hover:bg-slate-50/50 transition-colors">
-                                            <td className="py-5 pl-2">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center">
-                                                        <Icons.store className="h-5 w-5 text-slate-500" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors leading-tight">{biz.name}</p>
-                                                        <p className="text-[10px] text-slate-400 font-medium">Bölgesel Lider</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="py-5">
-                                                <div className="flex items-center gap-3">
-                                                    <span className="text-lg font-black text-slate-800">%{biz.latest_ranking?.score || 0}</span>
-                                                    <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                        <div
-                                                            className={`h-full rounded-full ${(biz.latest_ranking?.score || 0) > 80 ? 'bg-emerald-500' :
-                                                                    (biz.latest_ranking?.score || 0) > 50 ? 'bg-amber-500' : 'bg-red-500'
-                                                                }`}
-                                                            style={{ width: `${biz.latest_ranking?.score || 0}%` }}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="py-5">
-                                                <div className="flex items-center gap-1.5">
-                                                    <span className="text-sm font-bold text-slate-700">{biz.total_rating}</span>
-                                                    <Icons.star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                                                    <span className="text-[11px] text-slate-400 font-medium">({biz.review_count})</span>
-                                                </div>
-                                            </td>
-                                            <td className="py-5">
-                                                <Badge className="bg-emerald-50 text-emerald-600 border-none hover:bg-emerald-100 rounded-lg">
-                                                    Optimize
-                                                </Badge>
-                                            </td>
-                                            <td className="py-5 text-right pr-2">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => router.push(`/business/analyze?place_id=${biz.google_place_id}&name=${encodeURIComponent(biz.name)}`)}
-                                                    className="hover:text-blue-600 hover:bg-blue-50/50 rounded-lg"
-                                                >
-                                                    Analizi Gör
-                                                    <Icons.arrowRight className="ml-2 h-4 w-4" />
-                                                </Button>
-                                            </td>
+                        <>
+                            {/* Desktop View (Table) */}
+                            <div className="hidden md:block overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead className="border-b border-slate-50 dark:border-slate-800">
+                                        <tr className="text-[11px] font-black uppercase text-slate-400 tracking-wider">
+                                            <th className="pb-4 pl-2">İşletme Adı</th>
+                                            <th className="pb-4">MapRank Skoru</th>
+                                            <th className="pb-4">Puan / Yorum</th>
+                                            <th className="pb-4">Durum</th>
+                                            <th className="pb-4 text-right pr-2">Aksiyon</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                                        {businesses.map((biz) => (
+                                            <tr key={biz.id} className="group hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                                                <td className="py-5 pl-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-10 w-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                                                            <Icons.store className="h-5 w-5 text-slate-500" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 transition-colors leading-tight">{biz.name}</p>
+                                                            <p className="text-[10px] text-slate-400 font-medium">Bölgesel Lider</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="py-5">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-lg font-black text-slate-800 dark:text-slate-100">%{biz.latest_ranking?.score || 0}</span>
+                                                        <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                                            <div
+                                                                className={`h-full rounded-full ${(biz.latest_ranking?.score || 0) > 80 ? 'bg-emerald-500' :
+                                                                    (biz.latest_ranking?.score || 0) > 50 ? 'bg-amber-500' : 'bg-red-500'
+                                                                    }`}
+                                                                style={{ width: `${biz.latest_ranking?.score || 0}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="py-5">
+                                                    <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+                                                        <span className="text-sm font-bold">{biz.total_rating}</span>
+                                                        <Icons.star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                                                        <span className="text-[11px] text-slate-400 font-medium">({biz.review_count})</span>
+                                                    </div>
+                                                </td>
+                                                <td className="py-5">
+                                                    <Badge className="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-none hover:bg-emerald-100 rounded-lg">
+                                                        Optimize
+                                                    </Badge>
+                                                </td>
+                                                <td className="py-5 text-right pr-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => router.push(`/business/analyze?place_id=${biz.google_place_id}&name=${encodeURIComponent(biz.name)}`)}
+                                                        className="hover:text-blue-600 hover:bg-blue-50/50 rounded-lg dark:text-slate-400"
+                                                    >
+                                                        Analizi Gör
+                                                        <Icons.arrowRight className="ml-2 h-4 w-4" />
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Mobile View (Cards) */}
+                            <div className="md:hidden space-y-4">
+                                {businesses.map((biz) => (
+                                    <div
+                                        key={biz.id}
+                                        onClick={() => router.push(`/business/analyze?place_id=${biz.google_place_id}&name=${encodeURIComponent(biz.name)}`)}
+                                        className="p-4 rounded-2xl border border-slate-50 dark:border-slate-800 bg-white dark:bg-slate-900 active:bg-slate-50 dark:active:bg-slate-800 transition-colors shadow-sm"
+                                    >
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-10 w-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
+                                                    <Icons.store className="h-5 w-5 text-slate-400" />
+                                                </div>
+                                                <div className="max-w-[140px]">
+                                                    <p className="font-bold text-slate-900 dark:text-slate-100 truncate">{biz.name}</p>
+                                                    <p className="text-[10px] text-slate-400">Google Haritalar</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-xl font-black text-blue-600 dark:text-blue-400">%{biz.latest_ranking?.score || 0}</p>
+                                                <p className="text-[10px] text-slate-400 uppercase font-bold">Skor</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800">
+                                            <div className="flex items-center gap-1">
+                                                <span className="text-sm font-bold dark:text-slate-200">{biz.total_rating}</span>
+                                                <Icons.star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                                                <span className="text-[11px] text-slate-400">({biz.review_count})</span>
+                                            </div>
+                                            <Icons.arrowRight className="h-4 w-4 text-slate-300" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
                     )}
                 </CardContent>
             </MotionCard>

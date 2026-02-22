@@ -95,20 +95,40 @@ def health_tables_check(db: Session = Depends(get_db)):
         )
 
 @app.get("/health/migrate")
-def health_migrate():
+def health_migrate(db: Session = Depends(get_db)):
     try:
-        logger.info("Initializing Database Tables...")
-        table_count = len(Base.metadata.tables)
+        logger.info("Running Database Migrations/Sync...")
+        
+        # 1. Create tables if not exist
         Base.metadata.create_all(bind=engine)
+        
+        # 2. Check and add missing columns manually (SQLite/Postgres failsafe)
+        # Check for is_my_business in businesses
+        try:
+            db.execute(text("ALTER TABLE businesses ADD COLUMN IF NOT EXISTS is_my_business BOOLEAN DEFAULT FALSE"))
+            db.commit()
+            logger.info("Column is_my_business verified/added.")
+        except Exception as e:
+            logger.warning(f"Column is_my_business might already exist or error: {str(e)}")
+            db.rollback()
+
+        # Check for score in rankings
+        try:
+            db.execute(text("ALTER TABLE rankings ADD COLUMN IF NOT EXISTS score FLOAT"))
+            db.commit()
+            logger.info("Column score verified/added.")
+        except Exception as e:
+            logger.warning(f"Column score might already exist or error: {str(e)}")
+            db.rollback()
+
         return {
             "status": "ok", 
-            "message": "Database tables created successfully", 
-            "tables": list(Base.metadata.tables.keys()),
-            "count": table_count,
+            "message": "Database sync successful", 
             "version": APP_VERSION
         }
     except Exception as e:
         logger.error(f"Migration Failed: {str(e)}")
+        db.rollback()
         return JSONResponse(
             status_code=500,
             content={"status": "error", "message": str(e), "version": APP_VERSION}

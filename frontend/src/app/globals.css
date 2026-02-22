@@ -14,8 +14,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0f111a; /* Softer, deep midnight blue instead of pitch black */
+    --foreground: #f8fafc;
   }
 }
 

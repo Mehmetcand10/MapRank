@@ -174,9 +174,14 @@ def list_businesses(
     
     # Populate latest_ranking
     for business in businesses:
-        if business.rankings:
-            # Sort by snapshot_date desc
-            latest = sorted(business.rankings, key=lambda x: x.snapshot_date, reverse=True)[0]
-            business.latest_ranking = latest
+        try:
+            if business.rankings:
+                # Sort by snapshot_date desc
+                latest = sorted(business.rankings, key=lambda x: x.snapshot_date, reverse=True)[0]
+                business.latest_ranking = latest
+        except Exception as e:
+            import logging
+            logging.error(f"Error populating ranking for business {business.id}: {str(e)}")
+            continue
             
     return businesses

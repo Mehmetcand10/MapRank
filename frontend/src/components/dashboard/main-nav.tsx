@@ -25,6 +25,12 @@ export function MainNav({
                 Analiz
             </Link>
             <Link
+                href="/business/search"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+            >
+                Keşfet / Ara
+            </Link>
+            <Link
                 href="/reviews"
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
             >

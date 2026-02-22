@@ -114,19 +114,14 @@ function AnalyzeContent() {
         if (!placeId) return
 
         const fetchData = async () => {
+            setLoading(true) // Ensure it starts loading
             try {
-                // Remove trailing slash and use correct endpoint
                 const response = await api.post<AnalysisResult>(`/businesses/analyze?place_id=${placeId}`)
                 setData(response.data)
             } catch (err: any) {
                 console.error("Analysis failed", err)
                 const errorMessage = err.response?.data?.detail || err.message || "Bilinmeyen bir hata oluştu."
                 setError(errorMessage)
-                toast({
-                    title: "Hata",
-                    description: "Analiz verileri alınamadı: " + errorMessage,
-                    variant: "destructive",
-                })
             } finally {
                 setLoading(false)
             }
@@ -264,33 +259,35 @@ function AnalyzeContent() {
     if (!data) return <div>Veri bulunamadı.</div>
 
     return (
-        <div className="space-y-8 p-4 md:p-8 animate-in fade-in duration-500">
+        <div className="space-y-6 md:space-y-8 p-4 md:p-8 animate-in fade-in duration-500">
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 bg-white dark:bg-slate-900 p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
                 <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                        <h2 className="text-3xl font-extrabold tracking-tight text-foreground">{name || "İşletme Analizi"}</h2>
-                        <Badge className="bg-blue-50 text-blue-700 border-blue-200">💎 Premium Analiz</Badge>
+                    <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
+                        <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground dark:text-white leading-tight">{name || "İşletme Analizi"}</h2>
+                        <div className="flex items-center gap-2">
+                            <Badge className="bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/30">💎 Premium Analiz</Badge>
+                        </div>
                     </div>
-                    <p className="text-muted-foreground max-w-2xl text-lg flex items-center gap-2">
-                        <Icons.mapPin className="h-4 w-4 shrink-0" />
-                        {data.formatted_address}
+                    <p className="text-muted-foreground max-w-2xl text-sm md:text-lg flex items-start gap-2">
+                        <Icons.mapPin className="h-4 w-4 md:h-5 md:w-5 shrink-0 mt-0.5 md:mt-1 text-slate-400" />
+                        <span className="break-words">{data.formatted_address}</span>
                     </p>
                 </div>
-                <div className="flex flex-wrap gap-3">
-                    <Button variant="outline" size="lg" onClick={() => router.back()} className="rounded-full">
+                <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto">
+                    <Button variant="outline" size="lg" onClick={() => router.back()} className="flex-1 md:flex-none rounded-full h-11 md:h-12">
                         <Icons.chevronLeft className="mr-2 h-4 w-4" />
                         Geri
                     </Button>
                     {data.is_tracked ? (
-                        <Button variant="secondary" size="lg" onClick={() => router.push("/dashboard")} className="rounded-full bg-green-50 text-green-700 hover:bg-green-100">
+                        <Button variant="secondary" size="lg" onClick={() => router.push("/dashboard")} className="flex-1 md:flex-none rounded-full h-11 md:h-12 bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 hover:bg-green-100">
                             <Icons.check className="mr-2 h-4 w-4" />
-                            Takip Ediliyor
+                            Takipte
                         </Button>
                     ) : (
-                        <Button size="lg" onClick={handleSaveBusiness} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8 shadow-lg shadow-blue-200">
+                        <Button size="lg" onClick={handleSaveBusiness} disabled={saving} className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8 h-11 md:h-12 shadow-lg shadow-blue-200 active:scale-95 transition-all">
                             {saving ? <Icons.spinner className="mr-2 h-4 w-4 animate-spin" /> : <Icons.plus className="mr-2 h-4 w-4" />}
-                            Sisteme Kaydet & Takip Et
+                            Takip Et
                         </Button>
                     )}
                 </div>
