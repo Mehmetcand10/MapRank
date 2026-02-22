@@ -78,8 +78,10 @@ def analyze_business_endpoint(
         
         if exists:
             analysis["is_tracked"] = True
+            analysis["is_my_business"] = exists.is_my_business
         else:
             analysis["is_tracked"] = False
+            analysis["is_my_business"] = False
         
         return analysis
     except HTTPException as e:

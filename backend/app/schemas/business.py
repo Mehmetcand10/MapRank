@@ -57,6 +57,7 @@ class BusinessAnalysis(BaseModel):
     validation_status: str = "Unknown" # Claimed, Unclaimed, etc.
     competitors: List[Dict[str, Any]] = []
     is_tracked: bool = False
+    is_my_business: bool = False
     
     # Advanced Metrics
     review_velocity_30d: Optional[float] = 0.0
