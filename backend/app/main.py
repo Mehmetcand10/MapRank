@@ -47,7 +47,7 @@ async def add_cors_headers(request: Request, call_next):
     return response
 
 # Global Version Control
-APP_VERSION = "v23-STABLE"
+APP_VERSION = "v24-STABLE"
 
 @app.get("/")
 def root():
@@ -164,20 +164,29 @@ async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Global Exception Handler: {str(exc)}")
     logger.error(traceback.format_exc())
     
-    content = {
-        "detail": "Internal Server Error",
-        "message": str(exc),
-        "version": APP_VERSION
-    }
-    
     response = JSONResponse(
         status_code=500,
-        content=content
+        content={
+            "detail": "Internal Server Error",
+            "message": str(exc),
+            "version": APP_VERSION
+        }
     )
-    
-    # Force CORS headers on errors so browsers can read the message
+    return add_cors_to_response(response)
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    response = JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail, "version": APP_VERSION}
+    )
+    return add_cors_to_response(response)
+
+def add_cors_to_response(response: Response) -> Response:
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Methods"] = "*"
     response.headers["Access-Control-Allow-Headers"] = "*"
-    
+    response.headers["Access-Control-Allow-Credentials"] = "false"
     return response
+
+from fastapi import HTTPException

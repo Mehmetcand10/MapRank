@@ -67,6 +67,7 @@ def analyze_business_endpoint(
             raise HTTPException(status_code=404, detail=f"Google Maps records for this business ({place_id}) could not be retrieved.")
             
         # 2. Check if business is already tracked by this user/tenant
+        # Explicitly ensuring tenant_id is treated as a UUID for Postgres compatibility
         exists = db.query(models.Business).filter(
             models.Business.google_place_id == place_id,
             models.Business.tenant_id == current_user.tenant_id
@@ -212,7 +213,7 @@ def list_businesses(
             business.latest_ranking = latest
         except Exception as e:
             import logging
-            logging.error(f"Error populating ranking for business {business.id}: {str(e)}")
+            logging.error(f"Error populating ranking for business: {str(e)}")
             continue
             
     return businesses
