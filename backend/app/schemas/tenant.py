@@ -16,7 +16,7 @@ class TenantInDBBase(TenantBase):
     plan_type: str = "FREE"
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class Tenant(TenantInDBBase):
     pass

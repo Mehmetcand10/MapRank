@@ -4,6 +4,7 @@ from typing import List, Any
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from uuid import UUID
 from app import schemas, models
 from app.api import deps, auth_deps
 from app.services.google_maps import google_maps_service

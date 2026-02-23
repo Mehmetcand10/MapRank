@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://maprank-production-b0f1.up.railway.app/api/v1',
-    timeout: 10000, // 10 seconds timeout
+    timeout: 30000, // 30 seconds timeout
     headers: {},
 });
 
