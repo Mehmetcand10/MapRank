@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, Request, Response
+from fastapi import FastAPI, Depends, Request, Response, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -47,7 +47,7 @@ async def add_cors_headers(request: Request, call_next):
     return response
 
 # Global Version Control
-APP_VERSION = "v24-STABLE"
+APP_VERSION = "v25-STABLE"
 
 @app.get("/")
 def root():
@@ -188,5 +188,3 @@ def add_cors_to_response(response: Response) -> Response:
     response.headers["Access-Control-Allow-Headers"] = "*"
     response.headers["Access-Control-Allow-Credentials"] = "false"
     return response
-
-from fastapi import HTTPException
