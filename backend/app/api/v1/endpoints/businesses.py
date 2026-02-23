@@ -236,3 +236,59 @@ def delete_business(
     db.delete(business)
     db.commit()
     return business
+
+@router.get("/{business_id}/keywords", response_model=List[schemas.Keyword])
+def list_business_keywords(
+    business_id: UUID,
+    db: Session = Depends(deps.get_db),
+    current_user: schemas.User = Depends(auth_deps.get_current_user)
+):
+    keywords = db.query(models.Keyword).filter(models.Keyword.business_id == business_id).all()
+    return keywords
+
+@router.post("/{business_id}/keywords", response_model=schemas.Keyword)
+def add_business_keyword(
+    business_id: UUID,
+    keyword_in: schemas.KeywordCreate,
+    db: Session = Depends(deps.get_db),
+    current_user: schemas.User = Depends(auth_deps.get_current_user)
+):
+    db_keyword = models.Keyword(
+        term=keyword_in.term,
+        location=keyword_in.location,
+        business_id=business_id
+    )
+    db.add(db_keyword)
+    db.commit()
+    db.refresh(db_keyword)
+    
+    # Ideally trigger a ranking check here, but for now just return
+    return db_keyword
+
+@router.delete("/{business_id}/keywords/{keyword_id}")
+def delete_business_keyword(
+    business_id: UUID,
+    keyword_id: UUID,
+    db: Session = Depends(deps.get_db),
+    current_user: schemas.User = Depends(auth_deps.get_current_user)
+):
+    keyword = db.query(models.Keyword).filter(
+        models.Keyword.id == keyword_id,
+        models.Keyword.business_id == business_id
+    ).first()
+    if not keyword:
+        raise HTTPException(status_code=404, detail="Kelime bulunamadı.")
+    db.delete(keyword)
+    db.commit()
+    return {"message": "Success"}
+
+@router.get("/{business_id}/rankings/history", response_model=List[schemas.Ranking])
+def get_business_ranking_history(
+    business_id: UUID,
+    db: Session = Depends(deps.get_db),
+    current_user: schemas.User = Depends(auth_deps.get_current_user)
+):
+    rankings = db.query(models.Ranking).filter(
+        models.Ranking.business_id == business_id
+    ).order_by(models.Ranking.snapshot_date.asc()).all()
+    return rankings

@@ -36,6 +36,21 @@ export function MobileNav() {
             icon: Icons.globe,
         },
         {
+            href: "/business/seo",
+            label: "SEO Takibi",
+            icon: Icons.search,
+        },
+        {
+            href: "/business/reviews",
+            label: "Yorum Yanıt Merkezi",
+            icon: Icons.messageSquare,
+        },
+        {
+            href: "/franchise",
+            label: "Enterprise",
+            icon: Icons.store,
+        },
+        {
             href: "/billing",
             label: "Faturalandırma",
             icon: Icons.creditCard,
@@ -50,8 +65,11 @@ export function MobileNav() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="ghost" className="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 lg:hidden">
-                    <Menu className="h-6 w-6" />
+                <Button
+                    variant="ghost"
+                    className="mr-2 px-2 text-base hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden rounded-xl h-10 w-10 flex items-center justify-center border border-slate-200 dark:border-slate-800"
+                >
+                    <Menu className="h-6 w-6 text-slate-900 dark:text-white" />
                     <span className="sr-only">Toggle Menu</span>
                 </Button>
             </DialogTrigger>

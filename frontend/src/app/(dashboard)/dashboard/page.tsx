@@ -285,12 +285,29 @@ function BusinessTable({ businesses, onDelete, isMyBusinessTab }: BusinessTableP
                                     Kıyasla
                                 </Button>
                                 <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => router.push(`/business/reviews?id=${biz.id}`)}
+                                    className="rounded-xl h-9 border-indigo-200 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 font-bold uppercase text-[10px]"
+                                >
+                                    <Icons.messageSquare className="h-3 w-3 mr-1" />
+                                    Yorumlar
+                                </Button>
+                                <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => router.push(`/business/analyze?place_id=${biz.google_place_id}&name=${encodeURIComponent(biz.name)}`)}
                                     className="rounded-xl h-9 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 font-bold uppercase text-[10px]"
                                 >
                                     Analiz
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => router.push(`/business/seo?id=${biz.id}`)}
+                                    className="rounded-xl h-9 text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 font-bold uppercase text-[10px]"
+                                >
+                                    SEO
                                 </Button>
                                 <Button
                                     variant="ghost"
@@ -351,6 +368,14 @@ function MobileBusinessCard({ biz, onDelete }: { biz: Business, onDelete: (id: s
                             onClick={() => router.push(`/business/benchmarking?id=${biz.id}`)}
                         >
                             Kıyasla
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="w-full col-span-2 rounded-xl h-10 text-[10px] font-black uppercase border-indigo-200 dark:border-indigo-900/50 text-indigo-600"
+                            onClick={() => router.push(`/business/reviews?id=${biz.id}`)}
+                        >
+                            <Icons.messageSquare className="h-3 w-3 mr-2" />
+                            Yorum Yanıt Merkezi
                         </Button>
                     </div>
                 </div>

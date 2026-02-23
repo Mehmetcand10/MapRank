@@ -227,6 +227,7 @@ class RankingEngine:
             "business_types": business_data.get("types", []),
             "competitors": competitors[:5],
             "is_tracked": False,
+            "vitals": self.calculate_profile_vitals(business_data),
             
             # Advanced Metrics
             "review_velocity_30d": adv_metrics["review_velocity_30d"],
@@ -363,6 +364,29 @@ class RankingEngine:
             "Abonelik modeli ile düzenli ürün/hizmet alımını teşvik edin.",
             "Yapay zeka destekli stok yönetim sistemi ile kayıpları minimize edin."
         ]
+
+
+    def calculate_profile_vitals(self, details: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Calculate health score based on profile completeness and technical SEO.
+        """
+        checks = {
+            "has_website": bool(details.get("website")),
+            "has_phone": bool(details.get("formatted_phone_number")),
+            "has_photos": len(details.get("photos", [])) > 5,
+            "has_reviews": details.get("user_ratings_total", 0) > 10,
+            "has_opening_hours": bool(details.get("opening_hours")),
+            "is_verified": details.get("business_status") == "OPERATIONAL"
+        }
+        
+        passed = sum(1 for v in checks.values() if v)
+        completeness = (passed / len(checks)) * 100
+        
+        return {
+            "health_score": completeness,
+            "completeness": completeness,
+            "checks": checks
+        }
 
     def _generate_summary(self, score: float, recommendations: list, is_my_business: bool = False) -> str:
         if is_my_business:

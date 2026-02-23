@@ -3,6 +3,7 @@ import { UserNav } from "@/components/dashboard/user-nav"
 import { MobileNav } from "@/components/dashboard/mobile-nav"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Icons } from "@/components/icons"
+import { NotificationBell } from "@/components/dashboard/notification-bell"
 
 export default function DashboardLayout({
     children,
@@ -20,6 +21,7 @@ export default function DashboardLayout({
                     </div>
                     <MainNav className="hidden lg:flex mx-6" />
                     <div className="ml-auto flex items-center space-x-2 md:space-x-4">
+                        <NotificationBell />
                         <ModeToggle />
                         <UserNav />
                     </div>

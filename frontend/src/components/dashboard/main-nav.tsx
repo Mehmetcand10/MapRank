@@ -3,6 +3,8 @@ import { ModeToggle } from "@/components/mode-toggle"
 
 import { cn } from "@/lib/utils"
 
+import { Icons } from "@/components/icons"
+
 export function MainNav({
     className,
     ...props
@@ -31,12 +33,6 @@ export function MainNav({
                 Keşfet / Ara
             </Link>
             <Link
-                href="/reviews"
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-                Yorumlar
-            </Link>
-            <Link
                 href="/billing"
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
             >
@@ -47,6 +43,13 @@ export function MainNav({
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
             >
                 Ayarlar
+            </Link>
+            <Link
+                href="/franchise"
+                className="text-sm font-black uppercase tracking-tight text-slate-500 transition-colors hover:text-indigo-600 flex items-center gap-1.5"
+            >
+                <Icons.store className="h-4 w-4" />
+                Enterprise
             </Link>
         </nav>
     )

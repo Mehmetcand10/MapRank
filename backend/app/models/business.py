@@ -21,6 +21,12 @@ class Business(Base):
     
     keywords = relationship("Keyword", back_populates="business", cascade="all, delete-orphan")
     rankings = relationship("Ranking", back_populates="business", cascade="all, delete-orphan")
+    alerts = relationship("Alert", back_populates="business", cascade="all, delete-orphan")
+    
+    # Profile Vitals (Cached/Persisted for history)
+    health_score = Column(Float, default=0.0)
+    profile_completeness = Column(Float, default=0.0)
+    last_audit_date = Column(DateTime)
 
 class Keyword(Base):
     __tablename__ = "keywords"
@@ -48,3 +54,16 @@ class Ranking(Base):
 
     keyword_id = Column(UUID(as_uuid=True), ForeignKey("keywords.id", ondelete="CASCADE"))
     keyword = relationship("Keyword", back_populates="rankings")
+
+class Alert(Base):
+    __tablename__ = "alerts"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    type = Column(String) # critical, info, success, warning
+    title = Column(String)
+    message = Column(String)
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    business_id = Column(UUID(as_uuid=True), ForeignKey("businesses.id", ondelete="CASCADE"))
+    business = relationship("Business", back_populates="alerts")

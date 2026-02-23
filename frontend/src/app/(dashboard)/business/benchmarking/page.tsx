@@ -45,7 +45,7 @@ function BenchmarkingContent() {
 
         const fetchData = async () => {
             try {
-                // 1. Get businesses list to find the one we clicked and others
+                // 1. Get businesses list to find the name/place_id if needed
                 const bizListRes = await api.get("/businesses")
                 const businesses = bizListRes.data
                 const target = businesses.find((b: any) => b.id === businessId)
@@ -55,12 +55,18 @@ function BenchmarkingContent() {
                     return
                 }
 
-                // 2. Fetch full analysis for My Business
+                // 2. Fetch full analysis for My Business (Contains real-world competitors)
                 const analysisRes = await api.get(`/businesses/analyze?place_id=${target.google_place_id}`)
-                setMyBiz(analysisRes.data)
+                const data = analysisRes.data
+                setMyBiz(data)
 
-                // 3. Set others (Competitors) from the same tenant
-                setOthers(businesses.filter((b: any) => b.id !== businessId))
+                // 3. Set others from regional competitors returned by backend
+                // This replaces the "tenant businesses" with "real nearby competitors"
+                if (data.competitors && data.competitors.length > 0) {
+                    setOthers(data.competitors)
+                } else {
+                    setOthers([])
+                }
 
             } catch (err) {
                 console.error("Benchmarking fetch failed", err)
@@ -80,181 +86,175 @@ function BenchmarkingContent() {
                     <Icons.activity className="absolute inset-4 h-8 w-8 text-indigo-600" />
                 </div>
                 <div className="text-center animate-pulse">
-                    <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Stratejik Kıyaslama Hazırlanıyor...</h2>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Bölgesel rakipler ve pazar verileri eşleşiyor.</p>
+                    <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Pazar Analizi Hazırlanıyor...</h2>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Bölgesel liderler ve sektörel KPI'lar haritalanıyor.</p>
                 </div>
             </div>
         )
     }
 
-    // Prepare chart data
+    // Prepare chart data using backend benchmarks
+    const benchmarks = myBiz.sector_benchmarks || { avg_rating: 4.2, avg_response_rate: 65, avg_reviews: 45 }
     const chartData = [
-        { subject: 'Skor', A: myBiz.score, B: 75, fullMark: 100 },
-        { subject: 'Yorum', A: Math.min(100, (myBiz.metrics.review_count / 10)), B: 60, fullMark: 100 },
-        { subject: 'Görünürlük', A: myBiz.visibility_score || 70, B: 65, fullMark: 100 },
-        { subject: 'Yanıt Hızı', A: myBiz.owner_response_rate || 50, B: 40, fullMark: 100 },
-        { subject: 'Puan', A: myBiz.metrics.rating * 20, B: 85, fullMark: 100 },
+        { subject: 'Skor', A: myBiz.score, B: 70, fullMark: 100 },
+        { subject: 'Yorum Hacmi', A: Math.min(100, (myBiz.metrics.review_count / 5)), B: benchmarks.avg_reviews, fullMark: 100 },
+        { subject: 'Görünürlük', A: myBiz.visibility_score || 70, B: 60, fullMark: 100 },
+        { subject: 'Yanıt Hızı', A: myBiz.owner_response_rate || 50, B: benchmarks.avg_response_rate, fullMark: 100 },
+        { subject: 'Müşteri Memnuniyeti', A: myBiz.metrics.rating * 20, B: benchmarks.avg_rating * 20, fullMark: 100 },
     ]
 
+    // Sort all including me for leaderboard
+    const allForLeaderboard = [
+        ...others.map(o => ({ name: o.name, score: o.maprank_score || 15, rating: o.rating, reviews: o.user_ratings_total, isMe: false })),
+        { name: "Siz (İşletmeniz)", score: myBiz.score, rating: myBiz.metrics.rating, reviews: myBiz.metrics.review_count, isMe: true }
+    ].sort((a, b) => b.score - a.score)
+
+    const myRank = allForLeaderboard.findIndex(b => b.isMe) + 1
+
     return (
-        <div className="space-y-8 p-4 md:p-8">
-            <div className="flex items-center justify-between">
+        <div className="space-y-8 p-4 md:p-8 animate-in fade-in duration-700">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1">
                     <div className="flex items-center gap-2">
                         <Button variant="ghost" size="sm" onClick={() => router.back()} className="rounded-full -ml-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
                             <Icons.chevronLeft className="h-4 w-4" />
                         </Button>
-                        <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white">Kıyaslama Analizi</h1>
+                        <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white uppercase">Pazar Liderlik Analizi</h1>
                     </div>
-                    <p className="text-slate-500 dark:text-slate-400 font-medium">Asıl işletmeniz ve rakipleriniz arasındaki stratejik farklar.</p>
+                    <p className="text-slate-500 dark:text-slate-400 font-medium italic">Yerel rakipler ve sektörel başarı kriterleri.</p>
                 </div>
-                <Badge className="bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-none font-bold py-1 px-3">PREMIUM ANALİZ</Badge>
+                <div className="flex items-center gap-3">
+                    <div className="hidden md:flex flex-col items-end">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sıralamanız</span>
+                        <span className="text-lg font-black text-indigo-600">Bölge {myRank}.si</span>
+                    </div>
+                    <Badge className="bg-indigo-600 text-white border-none font-bold py-2 px-4 rounded-xl shadow-lg shadow-indigo-200">PRO LİSANS</Badge>
+                </div>
+            </div>
+
+            {/* Quick Leaderboard Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="p-6 rounded-[2rem] bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-2xl relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:rotate-12 transition-transform">
+                        <Icons.trending className="h-20 w-20" />
+                    </div>
+                    <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-4">Pazar Konumu</h3>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-5xl font-black">{myRank}</span>
+                        <span className="text-lg font-bold text-slate-500">/ {allForLeaderboard.length}</span>
+                    </div>
+                    <p className="mt-4 text-xs font-medium text-slate-400">Bölgenizdeki benzer işletmeler arasındaki güncel konumunuz.</p>
+                </div>
+                <LeaderboardMiniCard
+                    title="Sektör 1.si"
+                    name={allForLeaderboard[0]?.name || "Keşfediliyor..."}
+                    score={allForLeaderboard[0]?.score || 0}
+                    icon={Icons.star}
+                    color="text-amber-500"
+                />
+                <LeaderboardMiniCard
+                    title="En Yakın Takipçi"
+                    name={allForLeaderboard[myRank]?.name || "Siz Sonuncusunuz"}
+                    score={allForLeaderboard[myRank]?.score || 0}
+                    icon={Icons.activity}
+                    color="text-blue-500"
+                />
             </div>
 
             {/* Comparison Cards */}
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid gap-8 lg:grid-cols-2">
                 {/* Radar Chart */}
-                <MotionCard className="border-none shadow-2xl overflow-hidden bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl ring-1 ring-white/20">
-                    <CardHeader className="relative z-10">
-                        <div className="absolute top-0 right-0 p-4 opacity-5">
-                            <Icons.activity className="h-24 w-24" />
-                        </div>
-                        <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600">
-                                <Icons.activity className="h-5 w-5" />
-                            </div>
-                            Performans Radarı
+                <MotionCard className="border-none shadow-2xl overflow-hidden bg-white dark:bg-slate-900 ring-1 ring-slate-100 dark:ring-slate-800">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white uppercase text-sm font-black tracking-widest">
+                            <Icons.activity className="h-4 w-4 text-indigo-600" />
+                            Performans Dengesi
                         </CardTitle>
-                        <CardDescription className="dark:text-slate-400">Metrik bazlı kafa kafaya karşılaştırma.</CardDescription>
+                        <CardDescription className="dark:text-slate-400">Sektör ortalaması ile 5 ana eksende kıyaslama.</CardDescription>
                     </CardHeader>
-                    <CardContent className="h-[400px] relative z-10">
+                    <CardContent className="h-[350px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData}>
                                 <PolarGrid stroke="currentColor" className="text-slate-200 dark:text-slate-800" />
-                                <PolarAngleAxis dataKey="subject" tick={{ fill: 'currentColor', fontSize: 11, fontWeight: 700, className: "text-slate-500 dark:text-slate-400" }} />
+                                <PolarAngleAxis dataKey="subject" tick={{ fill: 'currentColor', fontSize: 10, fontWeight: 800, className: "text-slate-500 dark:text-slate-400" }} />
                                 <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
                                 <Radar
-                                    name="Sizin İşletmeniz"
+                                    name="Siz"
                                     dataKey="A"
                                     stroke="#6366f1"
                                     fill="#6366f1"
-                                    fillOpacity={0.5}
-                                    strokeWidth={3}
+                                    fillOpacity={0.6}
+                                    strokeWidth={4}
                                 />
                                 <Radar
-                                    name="Pazar Ortalaması"
+                                    name="Sektör Ort."
                                     dataKey="B"
                                     stroke="#94a3b8"
                                     fill="#94a3b8"
-                                    fillOpacity={0.15}
+                                    fillOpacity={0.2}
                                     strokeWidth={2}
                                 />
                                 <Tooltip
                                     contentStyle={{
-                                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                                        borderRadius: '16px',
+                                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                        borderRadius: '12px',
                                         border: 'none',
-                                        boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
-                                        backdropFilter: 'blur(8px)'
+                                        color: '#fff',
+                                        fontSize: '12px',
+                                        fontWeight: '700'
                                     }}
                                 />
-                                <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                                <Legend />
                             </RadarChart>
                         </ResponsiveContainer>
                     </CardContent>
                 </MotionCard>
 
-                {/* Core Comparison Table */}
+                {/* KPI Matrix with Descriptions */}
                 <MotionCard delay={0.1} className="border-none shadow-2xl overflow-hidden bg-white dark:bg-slate-900 ring-1 ring-slate-100 dark:ring-slate-800">
-                    <CardHeader className="bg-gradient-to-r from-slate-50 to-transparent dark:from-slate-800/50">
-                        <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600">
-                                <Icons.trending className="h-5 w-5" />
-                            </div>
-                            KPI Karşılaştırma Matrisi
+                    <CardHeader className="bg-slate-50/50 dark:bg-slate-800/20">
+                        <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white uppercase text-sm font-black tracking-widest">
+                            <Icons.trending className="h-4 w-4 text-emerald-600" />
+                            KPI Matrisi ve Eğitim
                         </CardTitle>
-                        <CardDescription className="dark:text-slate-400">Sektörel başarı kriterleri üzerinden kitle analizi.</CardDescription>
+                        <CardDescription className="dark:text-slate-400">Metriklerin anlamı ve rakip kıyaslamaları.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                                    <tr className="text-[10px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-widest">
-                                        <th className="px-6 py-4">İşletme</th>
-                                        <th className="px-6 py-4">MapRank</th>
-                                        <th className="px-6 py-4">Yorum Sağlığı</th>
-                                        <th className="px-6 py-4">Pazar Payı</th>
+                            <table className="w-full text-left border-collapse">
+                                <thead className="bg-slate-50 dark:bg-slate-800/50">
+                                    <tr className="text-[10px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-widest border-b border-slate-100 dark:border-slate-800">
+                                        <th className="px-6 py-4">Metrik / İşletme</th>
+                                        <th className="px-6 py-4">MapRank
+                                            <KPITooltip text="Algoritmik başarı skoru. Görünürlüğünüzün ana göstergesidir." />
+                                        </th>
+                                        <th className="px-6 py-4">Yanıt Hızı
+                                            <KPITooltip text="Yorumlara dönüş hızı. Google 'hızlı' profesyonelleri öne çıkarır." />
+                                        </th>
+                                        <th className="px-6 py-4">Pazar Payı
+                                            <KPITooltip text="Bölgesel hacimdeki tahmini hakimiyet oranınız." />
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
-                                    {/* ME */}
-                                    <tr className="bg-indigo-50/40 dark:bg-indigo-500/5 relative overflow-hidden group">
-                                        <td className="px-6 py-5 relative z-10">
-                                            <div className="flex flex-col">
-                                                <span className="font-black text-indigo-900 dark:text-indigo-400 leading-tight uppercase tracking-tighter">İşletmeniz</span>
-                                                <span className="text-[9px] text-indigo-600 font-bold bg-indigo-100 dark:bg-indigo-500/20 px-1.5 py-0.5 rounded mt-1 w-fit">REFERANS</span>
-                                            </div>
+                                    {/* ME ROW */}
+                                    <tr className="bg-indigo-50/30 dark:bg-indigo-500/5 font-bold">
+                                        <td className="px-6 py-5">
+                                            <span className="text-indigo-600 uppercase text-xs">Sizin İşletmeniz</span>
                                         </td>
-                                        <td className="px-6 py-5 relative z-10">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xl font-black text-indigo-600">%{myBiz.score}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-5 relative z-10">
-                                            <div className="flex items-center gap-1.5">
-                                                <div className="flex -space-x-1">
-                                                    {[1, 2, 3, 4, 5].map((s) => (
-                                                        <Icons.star key={s} className={cn("h-3 w-3", s <= Math.round(myBiz.metrics.rating) ? "text-amber-400 fill-amber-400" : "text-slate-200")} />
-                                                    ))}
-                                                </div>
-                                                <span className="text-xs font-bold text-slate-600 dark:text-slate-400">({myBiz.metrics.review_count})</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-5 relative z-10">
-                                            <div className="flex flex-col gap-1">
-                                                <div className="flex justify-between items-center text-[10px] font-black">
-                                                    <span className="text-emerald-600">%{myBiz.visibility_score || 65}</span>
-                                                </div>
-                                                <div className="w-20 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-emerald-500" style={{ width: `${myBiz.visibility_score || 65}%` }} />
-                                                </div>
-                                            </div>
-                                        </td>
+                                        <td className="px-6 py-5 text-indigo-700">%{myBiz.score}</td>
+                                        <td className="px-6 py-5 text-indigo-700">{Math.round(myBiz.response_speed_hours || 24)} Sa</td>
+                                        <td className="px-6 py-5 text-indigo-700">%{myBiz.market_share_estimate || 15}</td>
                                     </tr>
-
-                                    {/* OTHERS */}
-                                    {others.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={4} className="px-6 py-12 text-center">
-                                                <div className="flex flex-col items-center gap-2 opacity-40">
-                                                    <Icons.activity className="h-8 w-8" />
-                                                    <span className="text-xs font-bold uppercase tracking-widest">Kıyaslanacak rakip veri kümesi bulunamadı.</span>
-                                                </div>
-                                            </td>
+                                    {/* COMPETITORS */}
+                                    {others.slice(0, 4).map((o, idx) => (
+                                        <tr key={idx} className="text-xs text-slate-600 dark:text-slate-400">
+                                            <td className="px-6 py-4 truncate max-w-[140px] font-medium">{o.name}</td>
+                                            <td className="px-6 py-4">%{o.maprank_score || Math.round(70 - idx * 10)}</td>
+                                            <td className="px-6 py-4">~{Math.round(benchmarks.avg_response_rate / (idx + 1))} Sa</td>
+                                            <td className="px-6 py-4">%{Math.round(20 - idx * 3)}</td>
                                         </tr>
-                                    ) : (
-                                        others.slice(0, 5).map((o) => (
-                                            <tr key={o.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                                                <td className="px-6 py-5">
-                                                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-tight">{o.name}</span>
-                                                </td>
-                                                <td className="px-6 py-5">
-                                                    <span className="font-black text-slate-500 dark:text-slate-500">%{o.latest_ranking?.score || 15}</span>
-                                                </td>
-                                                <td className="px-6 py-5">
-                                                    <div className="flex items-center gap-1 text-slate-400">
-                                                        <span className="text-xs font-bold">{o.total_rating || 0}</span>
-                                                        <Icons.star className="h-2.5 w-2.5" />
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-5">
-                                                    <div className="w-16 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden opacity-50">
-                                                        <div className="h-full bg-slate-400" style={{ width: `${(o.latest_ranking?.score || 10)}%` }} />
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
@@ -262,77 +262,63 @@ function BenchmarkingContent() {
                 </MotionCard>
             </div>
 
-            {/* AI Advantage Analysis - NEW SECTION */}
-            <MotionCard delay={0.2} className="border-none shadow-2xl bg-indigo-900 text-white overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/20 blur-[100px] -mr-32 -mt-32" />
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 blur-[100px] -ml-32 -mb-32" />
-
-                <CardHeader className="relative z-10 border-b border-white/10">
-                    <CardTitle className="flex items-center gap-3 text-2xl font-black">
-                        <Icons.bot className="h-8 w-8 text-indigo-300" />
-                        Yapay Zeka Stratejik Açık Analizi
-                    </CardTitle>
-                    <CardDescription className="text-indigo-200 font-medium text-base">
-                        Rakiplerinizle aranızdaki performans boşluklarını kapatmak için AI önerileri.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="p-8 relative z-10">
-                    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-                        <AdvantageBlock
-                            title="Yorum Hızı"
-                            value="KRİTİK AÇIK"
-                            desc="En yakın rakibiniz yorumlara 2 saat içinde dönerken sizin süreniz 48 saati buluyor."
-                            color="text-red-400"
-                            icon={Icons.activity}
-                        />
-                        <AdvantageBlock
-                            title="SEO Görünürlüğü"
-                            value="Pazar Lideri"
-                            desc="Sektördeki 12 anahtar kelimenin 9'unda ilk 3'tesiniz. Mevziyi koruyun."
-                            color="text-emerald-400"
-                            icon={Icons.globe}
-                        />
-                        <AdvantageBlock
-                            title="İçerik Kalitesi"
-                            value="Geliştirilmeli"
-                            desc="Rakip işletmeler haftalık 3 yeni fotoğraf eklerken siz aylık 1 içerik paylaşıyorsunuz."
-                            color="text-amber-400"
-                            icon={Icons.star}
-                        />
-                        <AdvantageBlock
-                            title="Puan Kararlılığı"
-                            value="Mükemmel"
-                            desc="Son 6 aydır puanınız 4.8 bandında sabit kalmış. Müşteri memnuniyeti çok yüksek."
-                            color="text-blue-400"
-                            icon={Icons.checkCircle}
-                        />
+            {/* AI Strategic Insights */}
+            <div className="grid gap-6 md:grid-cols-2">
+                <MotionCard delay={0.2} className="bg-indigo-900 text-white border-none shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-8 opacity-10">
+                        <Icons.bot className="h-24 w-24" />
                     </div>
-                </CardContent>
-            </MotionCard>
+                    <CardHeader>
+                        <CardTitle className="text-white flex items-center gap-2 uppercase tracking-tighter italic">AI Strateji Odası</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <p className="text-indigo-200 text-sm leading-relaxed font-medium">
+                            "{allForLeaderboard[0]?.name}" isimli rakip, bölgede lider konumda. Onu geçmek için
+                            <span className="text-white font-black underline mx-1">Yorum Yanıt Hızınızı</span>
+                            %35 artırmalı ve profilinize haftalık 3 yeni fotoğraf eklemelisiniz.
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                            <Badge className="bg-white/10 text-white border-white/20">#HızOdaklı</Badge>
+                            <Badge className="bg-white/10 text-white border-white/20">#GörselGüç</Badge>
+                            <Badge className="bg-white/10 text-white border-white/20">#RakipAnalizi</Badge>
+                        </div>
+                    </CardContent>
+                </MotionCard>
 
-            {/* Gap Analysis Section */}
-            <div className="grid gap-6 md:grid-cols-3">
-                <InsightCard
-                    title="Görünürlük Farkı"
-                    diff={"+%12"}
-                    status="better"
-                    desc="Rakiplerinize göre pazarın %12 daha fazlasına hakimsiniz."
-                    icon={Icons.globe}
-                />
-                <InsightCard
-                    title="Yorum Kalitesi"
-                    diff={"-0.4"}
-                    status="worse"
-                    desc="Rakip ortalaması 4.8 iken sizin puanınız 4.4. Odaklanılması gereken alan."
-                    icon={Icons.messageSquare}
-                />
-                <InsightCard
-                    title="Yanıt Hızı"
-                    diff={"%40 Daha Yavaş"}
-                    status="warning"
-                    desc="Rakipler yorumlara %40 daha hızlı yanıt veriyor."
-                    icon={Icons.trending}
-                />
+                <div className="grid grid-cols-2 gap-4">
+                    <AdvantageBlock
+                        title=" SEO Sağlığı"
+                        value={`%${myBiz.keyword_relevance_score || 85}`}
+                        desc="Anahtar kelime uyumu."
+                        color="text-emerald-500"
+                        icon={Icons.globe}
+                    />
+                    <AdvantageBlock
+                        title="İçerik Gücü"
+                        value={`${myBiz.photo_count || 12} Foto`}
+                        desc="Görsel zenginlik."
+                        color="text-amber-500"
+                        icon={Icons.checkCircle}
+                    />
+                </div>
+            </div>
+        </div>
+    )
+}
+
+function LeaderboardMiniCard({ title, name, score, icon: Icon, color }: any) {
+    return (
+        <div className="p-6 rounded-[2rem] bg-white dark:bg-slate-900 shadow-xl border border-slate-100 dark:border-slate-800 group hover:scale-[1.02] transition-transform cursor-default">
+            <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{title}</span>
+                <Icon className={cn("h-4 w-4", color)} />
+            </div>
+            <h4 className="font-black text-slate-800 dark:text-white truncate uppercase tracking-tight">{name}</h4>
+            <div className="mt-2 flex items-center gap-2">
+                <span className={cn("font-black text-sm", color)}>%{score} Skor</span>
+                <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div className={cn("h-full", color.replace('text-', 'bg-'))} style={{ width: `${score}%` }} />
+                </div>
             </div>
         </div>
     )
@@ -340,45 +326,29 @@ function BenchmarkingContent() {
 
 function AdvantageBlock({ title, value, desc, color, icon: Icon }: any) {
     return (
-        <div className="space-y-3 p-4 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-colors">
-            <div className="flex items-center justify-between">
-                <Icon className={cn("h-5 w-5", color)} />
-                <span className={cn("text-[10px] font-black uppercase tracking-widest", color)}>{value}</span>
+        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 shadow-lg border border-slate-50 dark:border-slate-800 flex flex-col justify-between">
+            <div className="flex items-center gap-2 mb-2">
+                <div className={cn("p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800", color)}>
+                    <Icon className="h-4 w-4" />
+                </div>
+                <span className="text-[10px] font-black text-slate-400 uppercase">{title}</span>
             </div>
-            <h4 className="font-bold text-lg">{title}</h4>
-            <p className="text-xs text-indigo-100/70 leading-relaxed font-medium">{desc}</p>
+            <div>
+                <span className={cn("text-2xl font-black", color)}>{value}</span>
+                <p className="text-[10px] text-slate-500 font-bold mt-1 uppercase">{desc}</p>
+            </div>
         </div>
     )
 }
 
-function InsightCard({ title, diff, status, desc, icon: Icon }: any) {
-    const isGood = status === "better"
-    const isBad = status === "worse"
-
+function KPITooltip({ text }: { text: string }) {
     return (
-        <MotionCard className="border-none shadow-lg">
-            <CardContent className="p-6 space-y-3">
-                <div className="flex items-center justify-between">
-                    <div className={cn(
-                        "p-2 rounded-xl",
-                        isGood ? "bg-emerald-50 text-emerald-600" : isBad ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600"
-                    )}>
-                        <Icon className="h-5 w-5" />
-                    </div>
-                    <span className={cn(
-                        "text-lg font-black",
-                        isGood ? "text-emerald-500" : isBad ? "text-red-500" : "text-amber-500"
-                    )}>
-                        {diff}
-                    </span>
-                </div>
-                <div className="space-y-1">
-                    <h4 className="font-black text-slate-900">{title}</h4>
-                    <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                        {desc}
-                    </p>
-                </div>
-            </CardContent>
-        </MotionCard>
+        <div className="inline-block ml-1 group relative">
+            <Icons.activity className="h-3 w-3 text-slate-300 inline cursor-help" />
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 p-2 bg-slate-900 text-white text-[10px] rounded-lg shadow-2xl z-50 normal-case font-medium leading-relaxed">
+                {text}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-slate-900" />
+            </div>
+        </div>
     )
 }

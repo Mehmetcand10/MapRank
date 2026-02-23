@@ -3,6 +3,8 @@
 import { useEffect, useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import api from "@/lib/api"
+// PDF Generation
+const html2pdf = typeof window !== 'undefined' ? require('html2pdf.js') : null;
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -30,6 +32,23 @@ function ConsultantContent() {
     const [loading, setLoading] = useState(true)
     const [data, setData] = useState<ConsultantData | null>(null)
     const [error, setError] = useState<string | null>(null)
+
+    const handleDownloadPDF = () => {
+        if (!html2pdf || !data) return
+
+        const element = document.getElementById('consultant-report-template')
+        if (!element) return
+
+        const opt = {
+            margin: 0.2,
+            filename: `${data.name}_Strateji_Raporu.pdf`,
+            image: { type: 'jpeg', quality: 1.0 },
+            html2canvas: { scale: 3, useCORS: true, letterRendering: true },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().from(element).set(opt).save();
+    }
 
     useEffect(() => {
         const fetchData = async () => {
@@ -214,12 +233,87 @@ function ConsultantContent() {
                             </div>
                         </div>
 
-                        <Button className="w-full bg-white text-slate-900 hover:bg-slate-100 font-bold py-6 rounded-2xl text-lg group">
-                            Holdingleşme Raporunu İndir
-                            <Icons.arrowRight className="ml-2 h-5 w-5 group-hover:translate-x-2 transition-transform" />
+                        <Button
+                            onClick={handleDownloadPDF}
+                            className="w-full bg-white text-slate-900 hover:bg-slate-100 font-bold py-6 rounded-2xl text-lg group shadow-xl active:scale-95 transition-all"
+                        >
+                            Strateji Raporunu İndir (PDF)
+                            <Icons.fileDown className="ml-2 h-5 w-5 group-hover:translate-y-1 transition-transform" />
                         </Button>
                     </div>
                 </MotionCard>
+            </div>
+
+            {/* Premium Consultant PDF Template (Off-screen) */}
+            <div
+                id="consultant-report-template"
+                style={{
+                    position: 'absolute',
+                    left: '-9999px',
+                    top: 0,
+                    width: '800px',
+                    padding: '60px',
+                    background: 'white',
+                    color: '#0f172a',
+                    zIndex: -100
+                }}
+            >
+                <div style={{ borderBottom: '8px solid #4f46e5', paddingBottom: '30px', marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                    <div>
+                        <h1 style={{ fontSize: '42px', fontWeight: '900', margin: 0, color: '#1e1b4b' }}>MAPRANK <span style={{ color: '#4f46e5' }}>CONSULTANT</span></h1>
+                        <p style={{ margin: 0, fontSize: '16px', fontWeight: 'bold', color: '#6366f1', textTransform: 'uppercase', letterSpacing: '2px' }}>Özel Strateji ve Holdingleşme Raporu</p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                        <p style={{ margin: 0, fontSize: '18px', fontWeight: '900' }}>{data.name}</p>
+                        <p style={{ margin: 0, fontSize: '14px', color: '#64748b' }}>{new Date().toLocaleDateString('tr-TR')}</p>
+                    </div>
+                </div>
+
+                <div style={{ background: '#f5f3ff', padding: '30px', borderRadius: '30px', marginBottom: '40px', border: '1px solid #ddd6fe' }}>
+                    <h2 style={{ margin: '0 0 20px 0', fontSize: '24px', color: '#4338ca' }}>📍 Pazar Analiz Özeti</h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
+                        <div style={{ background: 'white', padding: '20px', borderRadius: '20px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+                            <small style={{ color: '#6366f1', fontWeight: 'bold' }}>KONUM</small>
+                            <p style={{ margin: '10px 0 0 0', fontWeight: '900' }}>{data.strategic_insights.market_position}</p>
+                        </div>
+                        <div style={{ background: 'white', padding: '20px', borderRadius: '20px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+                            <small style={{ color: '#f59e0b', fontWeight: 'bold' }}>AVANTAJ</small>
+                            <p style={{ margin: '10px 0 0 0', fontWeight: '900' }}>{data.strategic_insights.competitive_edge}</p>
+                        </div>
+                        <div style={{ background: '#4f46e5', padding: '20px', borderRadius: '20px', color: 'white' }}>
+                            <small style={{ fontWeight: 'bold', opacity: 0.8 }}>ÖNCELİK</small>
+                            <p style={{ margin: '10px 0 0 0', fontWeight: '900' }}>{data.strategic_insights.investment_priority}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style={{ marginBottom: '40px' }}>
+                    <h2 style={{ fontSize: '24px', borderLeft: '6px solid #4f46e5', paddingLeft: '15px', marginBottom: '25px' }}>🚀 Sektörel İnovasyon Fikirleri</h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                        {data.growth_ideas.map((idea, i) => (
+                            <div key={i} style={{ padding: '20px', border: '1px solid #e2e8f0', borderRadius: '20px', display: 'flex', gap: '15px' }}>
+                                <div style={{ background: '#4f46e5', color: 'white', width: '24px', height: '24px', borderRadius: '50%', textAlign: 'center', lineHeight: '24px', fontWeight: 'bold', flexShrink: 0 }}>{i + 1}</div>
+                                <p style={{ margin: 0, fontWeight: '600', fontSize: '14px' }}>{idea}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div style={{ background: '#1e1b4b', color: 'white', padding: '40px', borderRadius: '40px' }}>
+                    <h2 style={{ margin: '0 0 25px 0', fontSize: '24px', color: '#818cf8' }}>📈 Growth Hacking ve Ölçekleme</h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
+                        {data.growth_hacks.map((hack, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '15px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>
+                                <div style={{ width: '8px', height: '8px', background: '#6366f1', borderRadius: '50%' }}></div>
+                                <p style={{ margin: 0, fontSize: '15px' }}>{hack}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div style={{ marginTop: '50px', textAlign: 'center', color: '#64748b', fontSize: '12px' }}>
+                    <p>© 2026 MapRank AI - Bu rapor kişiye özel strateji danışmanlığı kapsamında üretilmiştir.</p>
+                </div>
             </div>
         </div>
     )

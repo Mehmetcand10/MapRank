@@ -13,6 +13,7 @@ import { Icons } from "@/components/icons"
 import { Progress } from "@/components/ui/progress"
 import { toast } from "@/components/ui/use-toast"
 import { Badge } from "@/components/ui/badge"
+import { ProfileVitalsWidget } from "@/components/business/profile-vitals"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
@@ -77,6 +78,11 @@ interface AnalysisResult {
     profile_completeness_percent?: number
     keyword_relevance_score?: number
     competitor_keywords?: { keyword: string, count: number, impact: string }[]
+    vitals?: {
+        health_score: number
+        completeness: number
+        checks: Record<string, boolean>
+    }
 }
 
 interface Competitor {
@@ -387,7 +393,7 @@ function AnalyzeContent() {
             </div>
 
             {/* Advanced Metrics Grid */}
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-3">
                 <MetricCard
                     title="Yorum Hızı (30 Gün)"
                     value={data.review_velocity_30d || 0}
@@ -415,7 +421,7 @@ function AnalyzeContent() {
             </div>
 
             {/* Main Stats Grid */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard
                     title="Görünürlük Skoru"
                     value={`%${data.visibility_score}`}
@@ -515,29 +521,31 @@ function AnalyzeContent() {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div className="md:col-span-2 h-64 rounded-2xl bg-slate-800 relative overflow-hidden border border-white/5 shadow-inner">
                                     {/* Mock Map Background */}
-                                    <div className="absolute inset-0 opacity-30 bg-[url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/0,0,1/600x400?access_token=none')] bg-cover"></div>
+                                    <div className="absolute inset-0 opacity-50 bg-[url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/0,0,1/600x400?access_token=none')] bg-cover"></div>
 
-                                    {/* Heatmap Hotspots */}
-                                    <div className="absolute top-1/4 left-1/3 h-24 w-24 bg-indigo-500 rounded-full blur-[60px] opacity-60 animate-pulse"></div>
-                                    <div className="absolute top-1/2 left-2/3 h-16 w-16 bg-blue-400 rounded-full blur-[40px] opacity-40 animate-pulse delay-700"></div>
-                                    <div className="absolute bottom-1/4 left-1/4 h-20 w-20 bg-emerald-400 rounded-full blur-[50px] opacity-30 animate-pulse delay-500"></div>
+                                    {/* Heatmap Hotspots - Sharpened for clarity (Radar Ping Style) */}
+                                    <div className="absolute top-1/4 left-1/3 h-20 w-20 bg-indigo-500 rounded-full blur-[15px] opacity-80 animate-ping duration-[3000ms]"></div>
+                                    <div className="absolute top-1/4 left-1/3 h-20 w-20 bg-indigo-500 rounded-full blur-[8px] opacity-90"></div>
+
+                                    <div className="absolute top-1/2 left-2/3 h-12 w-12 bg-blue-400 rounded-full blur-[12px] opacity-60 animate-pulse delay-700"></div>
+                                    <div className="absolute bottom-1/4 left-1/3 h-16 w-16 bg-emerald-400 rounded-full blur-[10px] opacity-50 animate-pulse delay-500"></div>
 
                                     {/* Location Pins */}
                                     <div className="absolute top-1/4 left-1/3 -ml-2 -mt-2">
-                                        <div className="h-4 w-4 bg-white rounded-full flex items-center justify-center shadow-lg">
-                                            <div className="h-2 w-2 bg-indigo-600 rounded-full"></div>
+                                        <div className="h-4 w-4 bg-white rounded-full flex items-center justify-center shadow-lg ring-4 ring-indigo-500/40">
+                                            <div className="h-2 w-2 bg-indigo-600 rounded-full scale-110"></div>
                                         </div>
                                     </div>
 
                                     {/* Legend */}
-                                    <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md p-3 rounded-lg border border-white/10 text-[10px] space-y-2">
+                                    <div className="absolute bottom-4 left-4 bg-slate-900/90 backdrop-blur-md p-3 rounded-xl border border-white/10 text-[10px] space-y-2 shadow-2xl">
                                         <div className="flex items-center gap-2">
-                                            <div className="h-2 w-2 rounded-full bg-indigo-500"></div>
-                                            <span>Yüksek Görünürlük</span>
+                                            <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]"></div>
+                                            <span className="font-black text-white uppercase tracking-tighter">Mükemmel Görünürlük</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <div className="h-2 w-2 rounded-full bg-emerald-400"></div>
-                                            <span>Fırsat Bölgesi</span>
+                                            <div className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></div>
+                                            <span className="font-black text-white uppercase tracking-tighter">Büyüme Bölgesi</span>
                                         </div>
                                     </div>
                                 </div>
@@ -545,14 +553,28 @@ function AnalyzeContent() {
                                 <div className="space-y-4">
                                     <div className="bg-white/5 p-4 rounded-xl border border-white/10">
                                         <h5 className="text-xs font-bold text-indigo-300 uppercase mb-2">Büyüme Fırsatı</h5>
-                                        <p className="text-sm font-medium">Beşiktaş / Ortaköy hattında rakip yoğunluğu düşük. %22 daha fazla trafik potansiyeli!</p>
+                                        <p className="text-sm font-medium">Bölgenizde pazar payı büyüme potansiyeli tespit edildi. %22 daha fazla trafik elde edebilirsiniz!</p>
                                     </div>
                                     <div className="bg-white/5 p-4 rounded-xl border border-white/10">
-                                        <h5 className="text-xs font-bold text-emerald-400 uppercase mb-2">Kritik Bölge</h5>
-                                        <p className="text-sm font-medium">Kadıköy Merkez bölgesinde 3 ana rakibiniz çok güçlü. Etkileşimi artırmalısınız.</p>
+                                        <h5 className="text-xs font-bold text-emerald-400 uppercase mb-2">Kritik Bölge Analizi</h5>
+                                        <p className="text-sm font-medium">Hizmet verdiğiniz lokasyonda rekabet yoğun. Görünürlüğünüzü artıracak aksiyonlar alınmalı.</p>
                                     </div>
-                                    <Button variant="outline" className="w-full text-indigo-300 border-indigo-500/30 hover:bg-indigo-500/10 h-8 text-xs">
-                                        Detaylı Isı Haritası (Cebinizde)
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => {
+                                            if (data.is_tracked && internalId) {
+                                                router.push(`/business/benchmarking?id=${internalId}`)
+                                            } else {
+                                                toast({
+                                                    title: "Bilgi",
+                                                    description: "Detaylı analiz için önce işletmeyi takip etmelisiniz.",
+                                                })
+                                            }
+                                        }}
+                                        className="w-full text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/10 h-10 text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-900/20"
+                                    >
+                                        Analizi Genişlet
+                                        <Icons.arrowRight className="ml-2 h-3 w-3" />
                                     </Button>
                                 </div>
                             </div>
@@ -663,7 +685,9 @@ function AnalyzeContent() {
                 </MotionCard>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+                {data.vitals && <ProfileVitalsWidget vitals={data.vitals} />}
+
                 {/* Sentiment & Trends */}
                 <MotionCard delay={0.4}>
                     <CardHeader>
@@ -715,15 +739,15 @@ function AnalyzeContent() {
                 </MotionCard>
             </div>
 
-            {/* Premium Business Growth Ideas */}
-            {data.growth_ideas && data.growth_ideas.length > 0 && (
+            {/* Premium Business Growth Ideas - Restricted to Owner */}
+            {isMyBusiness && data.growth_ideas && data.growth_ideas.length > 0 && (
                 <MotionCard delay={0.7} className="border-indigo-500/20 bg-indigo-500/5 overflow-hidden">
                     <CardHeader className="bg-indigo-600 text-white p-6">
                         <CardTitle className="flex items-center gap-3 text-xl">
                             <Icons.settings className="h-6 w-6 animate-spin-slow" />
                             Geleceğin İşletme Fikirleri (Premium Rapor)
                         </CardTitle>
-                        <CardDescription className="text-indigo-100">Yapılan sektör analizine göre sizin için üretilmiş özel büyüme modelleri.</CardDescription>
+                        <CardDescription className="text-indigo-100">Analiz edilen sektördeki verilerinize göre sadece sizin için üretilmiş özel büyüme modelleri.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-8">
                         <div className="grid gap-6 md:grid-cols-2">
@@ -740,8 +764,22 @@ function AnalyzeContent() {
                 </MotionCard>
             )}
 
-            {/* Premium PDF Template (Hidden from view, visible to html2pdf) */}
-            <div id="premium-report-template" className="hidden" style={{ width: '800px', padding: '40px', background: 'white', color: '#0f172a' }}>
+            {/* Premium PDF Template (Moved off-screen to be accessible by html2pdf) */}
+            <div
+                id="premium-report-template"
+                className="no-print"
+                style={{
+                    position: 'absolute',
+                    left: '-9999px',
+                    top: 0,
+                    width: '850px',
+                    padding: '50px',
+                    background: 'white',
+                    color: '#0f172a',
+                    zIndex: -100,
+                    pointerEvents: 'none'
+                }}
+            >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '4px solid #4f46e5', paddingBottom: '20px', marginBottom: '30px' }}>
                     <div>
                         <h1 style={{ fontSize: '32px', fontWeight: '900', margin: 0 }}>MapRank <span style={{ color: '#4f46e5' }}>PRO</span></h1>

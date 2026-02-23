@@ -22,6 +22,20 @@ class BusinessSearchResult(BaseModel):
     user_ratings_total: int
     maprank_score: Optional[float] = None
 
+class KeywordBase(BaseModel):
+    term: str
+    location: str
+
+class KeywordCreate(KeywordBase):
+    pass
+
+class Keyword(KeywordBase):
+    id: UUID
+    business_id: UUID
+
+    class Config:
+        from_attributes = True
+
 class Ranking(BaseModel):
     id: int
     rank_position: Optional[int]
@@ -30,7 +44,7 @@ class Ranking(BaseModel):
     competitors_json: Optional[List[Dict[str, Any]]]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class Business(BusinessBase):
     id: UUID
@@ -38,7 +52,7 @@ class Business(BusinessBase):
     latest_ranking: Optional[Ranking] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class Recommendation(BaseModel):
     type: str # critical, warning, suggestion
@@ -77,3 +91,26 @@ class BusinessAnalysis(BaseModel):
     growth_ideas: Optional[List[str]] = None
     strategic_insights: Optional[Dict[str, Any]] = None
     business_types: Optional[List[str]] = None
+
+class AlertBase(BaseModel):
+    type: str
+    title: str
+    message: str
+    is_read: bool = False
+    business_id: UUID
+
+class AlertCreate(AlertBase):
+    pass
+
+class Alert(AlertBase):
+    id: UUID
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+class ProfileAudit(BaseModel):
+    health_score: float
+    completeness: float
+    issues: List[Recommendation]
+    last_audit: datetime
