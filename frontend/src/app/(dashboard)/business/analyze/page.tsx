@@ -310,21 +310,21 @@ function AnalyzeContent() {
             {isMyBusiness && internalId && (
                 <div
                     onClick={() => router.push(`/business/consultant?id=${internalId}`)}
-                    className="cursor-pointer group flex flex-col md:flex-row items-center justify-between gap-6 p-6 md:p-8 bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-900 rounded-[2rem] shadow-xl hover:shadow-2xl hover:scale-[1.01] transition-all duration-300 relative overflow-hidden text-white"
+                    className="cursor-pointer group flex flex-col md:flex-row items-center justify-between gap-6 p-6 md:p-8 bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-900 dark:from-indigo-950 dark:via-indigo-900 dark:to-slate-900 rounded-[2rem] shadow-xl hover:shadow-2xl hover:scale-[1.01] transition-all duration-300 relative overflow-hidden text-white"
                 >
                     <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
-                        <Icons.bot className="h-32 w-32" />
+                        <Icons.bot className="h-24 w-24 md:h-32 md:w-32" />
                     </div>
-                    <div className="relative z-10 flex items-center gap-6">
-                        <div className="h-16 w-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-indigo-200">
-                            <Icons.trophy className="h-8 w-8" />
+                    <div className="relative z-10 flex items-center gap-4 md:gap-6">
+                        <div className="h-12 w-12 md:h-16 md:w-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-indigo-100">
+                            <Icons.trophy className="h-6 w-6 md:h-8 md:w-8" />
                         </div>
                         <div className="space-y-1">
-                            <h3 className="text-xl md:text-2xl font-black">Holdingleşme Yolunda Strateji Odasına Girin!</h3>
-                            <p className="text-indigo-100 text-sm font-medium">Sektörünüze özel milyar dolarlık iş fikirleri ve pazar domine etme planı hazır.</p>
+                            <h3 className="text-lg md:text-2xl font-black leading-tight">Holdingleşme Yolunda Strateji Odasına Girin!</h3>
+                            <p className="text-indigo-100/80 text-xs md:text-sm font-medium">Sektörünüze özel milyar dolarlık iş fikirleri ve pazar domine etme planı hazır.</p>
                         </div>
                     </div>
-                    <Button className="relative z-10 bg-white text-indigo-900 hover:bg-slate-100 font-black rounded-2xl px-8 h-12 shadow-lg group-hover:translate-x-2 transition-transform">
+                    <Button className="relative z-10 bg-white text-indigo-950 hover:bg-slate-100 font-black rounded-2xl px-8 h-12 shadow-lg group-hover:translate-x-2 transition-transform w-full md:w-auto">
                         Odaya Geçiş Yap
                         <Icons.arrowRight className="ml-2 h-5 w-5" />
                     </Button>
@@ -345,30 +345,39 @@ function AnalyzeContent() {
                         <span className="break-words">{data.formatted_address}</span>
                     </p>
                 </div>
-                <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto">
-                    <Button variant="outline" size="lg" onClick={() => router.back()} className="flex-1 md:flex-none rounded-full h-11 md:h-12">
+                <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto no-print">
+                    <Button variant="outline" size="lg" onClick={() => router.back()} className="flex-1 md:flex-none rounded-2xl h-11 md:h-12 border-slate-200 dark:border-slate-800 dark:text-slate-300">
                         <Icons.chevronLeft className="mr-2 h-4 w-4" />
                         Geri
                     </Button>
+                    <Button
+                        onClick={handleDownloadPDF}
+                        size="lg"
+                        disabled={loading}
+                        className="flex-1 md:flex-none rounded-2xl h-11 md:h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-lg shadow-indigo-100 dark:shadow-indigo-950/20"
+                    >
+                        <Icons.fileDown className="mr-2 h-4 w-4" />
+                        PDF Rapor
+                    </Button>
                     {data.is_tracked ? (
-                        <Button variant="secondary" size="lg" onClick={() => router.push("/dashboard")} className="flex-1 md:flex-none rounded-full h-11 md:h-12 bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 hover:bg-green-100">
+                        <Button variant="secondary" size="lg" onClick={() => router.push("/dashboard")} className="flex-1 md:flex-none rounded-2xl h-11 md:h-12 bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 hover:bg-green-100">
                             <Icons.check className="mr-2 h-4 w-4" />
                             Takipte
                         </Button>
                     ) : (
-                        <div className="flex flex-col md:flex-row items-center gap-3">
+                        <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
                             <Button
                                 variant={isMyBusiness ? "primary" : "outline"}
                                 onClick={() => setIsMyBusiness(!isMyBusiness)}
                                 className={cn(
-                                    "rounded-full h-11 md:h-12 px-6 transition-all",
-                                    isMyBusiness ? "bg-indigo-600 text-white shadow-md shadow-indigo-100" : "text-slate-600 border-slate-200"
+                                    "rounded-2xl h-11 md:h-12 px-6 transition-all w-full md:w-auto",
+                                    isMyBusiness ? "bg-indigo-600 text-white shadow-md shadow-indigo-100" : "text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800"
                                 )}
                             >
                                 {isMyBusiness ? <Icons.check className="mr-2 h-4 w-4" /> : <Icons.plus className="mr-2 h-4 w-4" />}
                                 Bu Benim İşletmem
                             </Button>
-                            <Button size="lg" onClick={handleSaveBusiness} disabled={saving} className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8 h-11 md:h-12 shadow-lg shadow-blue-200 active:scale-95 transition-all">
+                            <Button size="lg" onClick={handleSaveBusiness} disabled={saving} className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-2xl px-8 h-11 md:h-12 shadow-lg shadow-blue-200 active:scale-95 transition-all">
                                 {saving ? <Icons.spinner className="mr-2 h-4 w-4 animate-spin" /> : <Icons.plus className="mr-2 h-4 w-4" />}
                                 Takip Et ve Kaydet
                             </Button>
@@ -839,17 +848,17 @@ function MetricCard({ title, value, unit, icon: Icon, progress, footer }: any) {
 
 function StatCard({ title, value, sub, icon: Icon, color, bg }: any) {
     return (
-        <MotionCard className="border-none shadow-sm hover:shadow-md transition-shadow">
+        <MotionCard className="border-none shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-slate-900/50">
             <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                    <div className={`p-3 rounded-2xl ${bg}`}>
+                    <div className={`p-3 rounded-2xl ${bg} dark:bg-slate-800`}>
                         <Icon className={`h-6 w-6 ${color}`} />
                     </div>
                 </div>
                 <div className="space-y-1">
-                    <p className="text-2xl font-black tracking-tight">{value}</p>
-                    <p className="text-sm font-bold text-slate-900">{title}</p>
-                    <p className="text-xs text-muted-foreground">{sub}</p>
+                    <p className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">{value}</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-slate-200">{title}</p>
+                    <p className="text-xs text-muted-foreground dark:text-slate-400">{sub}</p>
                 </div>
             </CardContent>
         </MotionCard>
@@ -859,10 +868,10 @@ function StatCard({ title, value, sub, icon: Icon, color, bg }: any) {
 function SentimentStat({ label, value, color }: any) {
     return (
         <div className="flex flex-col items-center">
-            <span className="text-xs font-bold text-muted-foreground mb-1">{label}</span>
+            <span className="text-xs font-bold text-muted-foreground dark:text-slate-500 mb-1">{label}</span>
             <div className="flex items-center gap-2">
                 <div className={`h-2 w-2 rounded-full ${color}`} />
-                <span className="font-bold text-slate-900">%{value}</span>
+                <span className="font-bold text-slate-900 dark:text-slate-200">%{value}</span>
             </div>
         </div>
     )

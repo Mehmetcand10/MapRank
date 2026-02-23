@@ -19,8 +19,8 @@ class Business(Base):
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"))
     tenant = relationship("Tenant", back_populates="businesses")
     
-    keywords = relationship("Keyword", back_populates="business")
-    rankings = relationship("Ranking", back_populates="business")
+    keywords = relationship("Keyword", back_populates="business", cascade="all, delete-orphan")
+    rankings = relationship("Ranking", back_populates="business", cascade="all, delete-orphan")
 
 class Keyword(Base):
     __tablename__ = "keywords"
@@ -29,10 +29,10 @@ class Keyword(Base):
     term = Column(String, nullable=False)
     location = Column(String, nullable=False)
     
-    business_id = Column(UUID(as_uuid=True), ForeignKey("businesses.id"))
+    business_id = Column(UUID(as_uuid=True), ForeignKey("businesses.id", ondelete="CASCADE"))
     business = relationship("Business", back_populates="keywords")
     
-    rankings = relationship("Ranking", back_populates="keyword")
+    rankings = relationship("Ranking", back_populates="keyword", cascade="all, delete-orphan")
 
 class Ranking(Base):
     __tablename__ = "rankings"
@@ -43,8 +43,8 @@ class Ranking(Base):
     snapshot_date = Column(DateTime, default=datetime.utcnow)
     score = Column(Float) # MapRank score
 
-    business_id = Column(UUID(as_uuid=True), ForeignKey("businesses.id"))
+    business_id = Column(UUID(as_uuid=True), ForeignKey("businesses.id", ondelete="CASCADE"))
     business = relationship("Business", back_populates="rankings")
 
-    keyword_id = Column(UUID(as_uuid=True), ForeignKey("keywords.id"))
+    keyword_id = Column(UUID(as_uuid=True), ForeignKey("keywords.id", ondelete="CASCADE"))
     keyword = relationship("Keyword", back_populates="rankings")

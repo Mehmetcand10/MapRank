@@ -48,9 +48,6 @@ export function MainNav({
             >
                 Ayarlar
             </Link>
-            <div className="ml-auto flex items-center space-x-4">
-                <ModeToggle />
-            </div>
         </nav>
     )
 }

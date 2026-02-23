@@ -62,9 +62,9 @@ function ConsultantContent() {
     }, [businessId])
 
     if (loading) return (
-        <div className="flex h-[80vh] items-center justify-center flex-col gap-4">
+        <div className="flex h-[80vh] items-center justify-center flex-col gap-4 bg-slate-50 dark:bg-slate-900 transition-colors">
             <Icons.bot className="h-12 w-12 animate-bounce text-indigo-600" />
-            <p className="font-bold text-indigo-900 animate-pulse text-xl">Strateji Odası Hazırlanıyor...</p>
+            <p className="font-bold text-indigo-900 dark:text-indigo-400 animate-pulse text-xl">Strateji Odası Hazırlanıyor...</p>
         </div>
     )
 
@@ -113,13 +113,13 @@ function ConsultantContent() {
                         <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6">Analizlere göre pazarın şu anki konumunuz:</p>
 
                         <div className="space-y-6">
-                            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                <p className="text-[10px] font-black text-indigo-600 uppercase mb-1">Mevcut Durum</p>
-                                <p className="text-lg font-bold text-slate-800">{data.strategic_insights.market_position}</p>
+                            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase mb-1">Mevcut Durum</p>
+                                <p className="text-lg font-bold text-slate-800 dark:text-slate-200">{data.strategic_insights.market_position}</p>
                             </div>
-                            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                                 <p className="text-[10px] font-black text-amber-600 uppercase mb-1">Rekabet Avantajınız</p>
-                                <p className="text-lg font-bold text-slate-800">{data.strategic_insights.competitive_edge}</p>
+                                <p className="text-lg font-bold text-slate-800 dark:text-slate-200">{data.strategic_insights.competitive_edge}</p>
                             </div>
                             <div className="p-4 bg-indigo-600 rounded-2xl text-white shadow-lg shadow-indigo-200">
                                 <p className="text-[10px] font-black uppercase mb-1 opacity-70">Acil Yatırım Önceliği</p>
@@ -130,10 +130,10 @@ function ConsultantContent() {
                 </MotionCard>
 
                 {/* 2. Industry-Specific Innovation Card */}
-                <MotionCard delay={0.2} className="lg:col-span-2 border-none shadow-xl bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 overflow-hidden">
+                <MotionCard delay={0.2} className="lg:col-span-2 border-none shadow-xl bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-950 overflow-hidden">
                     <div className="p-8 md:p-10 border-b border-slate-100 dark:border-slate-800">
                         <h3 className="text-3xl font-black flex items-center gap-4 dark:text-white">
-                            <div className="h-12 w-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                            <div className="h-12 w-12 rounded-xl bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
                                 <Icons.settings className="h-7 w-7 animate-spin-slow" />
                             </div>
                             Sektörel İnovasyon Fikirleri
@@ -141,7 +141,7 @@ function ConsultantContent() {
                     </div>
                     <div className="p-8 md:p-10 grid gap-6 md:grid-cols-2">
                         {data.growth_ideas?.map((idea, i) => (
-                            <div key={i} className="group p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-indigo-500/30 transition-all duration-300">
+                            <div key={i} className="group p-6 bg-white dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:border-indigo-500/30 transition-all duration-300">
                                 <div className="flex items-start gap-4">
                                     <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white flex items-center justify-center font-black group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                                         {i + 1}
@@ -157,17 +157,17 @@ function ConsultantContent() {
             {/* Full Growth Roadmap */}
             <div className="grid gap-8 lg:grid-cols-2">
                 {/* 3. Tactical Growth Hacks */}
-                <MotionCard className="border-none shadow-xl bg-white dark:bg-slate-900 p-8 md:p-12 rounded-[2rem]">
+                <MotionCard className="border-none shadow-xl bg-white dark:bg-slate-900/50 p-8 md:p-12 rounded-[2rem]">
                     <div className="flex items-center justify-between mb-8">
                         <div>
                             <h3 className="text-3xl font-black dark:text-white">Growth Hacking Motoru</h3>
-                            <p className="text-slate-500 font-medium">Bu küçük hamleler büyük sonuçlar yaratır.</p>
+                            <p className="text-slate-500 dark:text-slate-400 font-medium">Bu küçük hamleler büyük sonuçlar yaratır.</p>
                         </div>
                         <Icons.activity className="h-10 w-10 text-indigo-600 opacity-20" />
                     </div>
                     <div className="space-y-4">
                         {data.growth_hacks?.map((hack, i) => (
-                            <div key={i} className="flex gap-5 p-4 items-center border-b border-slate-50 dark:border-slate-800 group hover:bg-slate-50/50 rounded-xl transition-colors">
+                            <div key={i} className="flex gap-5 p-4 items-center border-b border-slate-50 dark:border-slate-800 group hover:bg-slate-50/50 dark:hover:bg-slate-800/50 rounded-xl transition-colors">
                                 <div className="h-2 w-2 rounded-full bg-indigo-500 group-hover:scale-150 transition-transform" />
                                 <p className="text-slate-700 dark:text-slate-300 font-semibold">{hack}</p>
                             </div>

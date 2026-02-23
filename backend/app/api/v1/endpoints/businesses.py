@@ -215,3 +215,24 @@ def list_businesses(
             continue
             
     return businesses
+
+@router.delete("/{business_id}", response_model=schemas.Business)
+def delete_business(
+    business_id: str,
+    db: Session = Depends(deps.get_db),
+    current_user: schemas.User = Depends(auth_deps.get_current_user)
+) -> Any:
+    """
+    Delete a business and its associated rankings/keywords.
+    """
+    business = db.query(models.Business).filter(
+        models.Business.id == business_id,
+        models.Business.tenant_id == current_user.tenant_id
+    ).first()
+    
+    if not business:
+        raise HTTPException(status_code=404, detail="İşletme bulunamadı veya yetkiniz yok.")
+        
+    db.delete(business)
+    db.commit()
+    return business
