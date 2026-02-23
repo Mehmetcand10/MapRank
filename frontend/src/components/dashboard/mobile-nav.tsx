@@ -18,6 +18,13 @@ import { Menu } from "lucide-react"
 export function MobileNav() {
     const pathname = usePathname()
     const [open, setOpen] = React.useState(false)
+    const [mounted, setMounted] = React.useState(false)
+
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    if (!mounted) return null;
 
     const routes = [
         {
