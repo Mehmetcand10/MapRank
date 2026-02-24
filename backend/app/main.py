@@ -47,7 +47,7 @@ async def add_cors_headers(request: Request, call_next):
     return response
 
 # Global Version Control
-APP_VERSION = "v26-STABLE"
+APP_VERSION = "v27-STABLE"
 
 @app.get("/")
 def root():
