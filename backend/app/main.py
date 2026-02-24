@@ -10,7 +10,7 @@ import time
 from app.core.config import settings
 from app.api.v1.api import api_router
 from app.core.database import get_db, engine
-from app.models import Base, User, Tenant, Business, Keyword, Ranking, Subscription, UsageLog
+from app.models import Base, User, Tenant, Business, Keyword, Ranking, Subscription, UsageLog, GridRankSnapshot, GridPointRank
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -47,7 +47,7 @@ async def add_cors_headers(request: Request, call_next):
     return response
 
 # Global Version Control
-APP_VERSION = "v25-STABLE"
+APP_VERSION = "v26-STABLE"
 
 @app.get("/")
 def root():

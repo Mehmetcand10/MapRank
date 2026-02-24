@@ -33,6 +33,12 @@ export function MainNav({
                 Keşfet / Ara
             </Link>
             <Link
+                href="/business/grid-rank"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+            >
+                Grid Rank
+            </Link>
+            <Link
                 href="/billing"
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
             >

@@ -43,6 +43,11 @@ export function MobileNav() {
             icon: Icons.globe,
         },
         {
+            href: "/business/grid-rank",
+            label: "Grid Ranking (Heatmap)",
+            icon: Icons.map,
+        },
+        {
             href: "/business/seo",
             label: "SEO Takibi",
             icon: Icons.search,
