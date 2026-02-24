@@ -5,6 +5,8 @@ from .grid_engine import grid_engine
 from .google_maps import google_maps_service
 import logging
 
+logger = logging.getLogger(__name__)
+
 class GridService:
     def run_analysis(
         self, 

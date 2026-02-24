@@ -47,7 +47,7 @@ async def add_cors_headers(request: Request, call_next):
     return response
 
 # Global Version Control
-APP_VERSION = "v31-STABLE"
+APP_VERSION = "v32-STABLE"
 
 @app.get("/")
 def root():
@@ -132,6 +132,18 @@ def health_migrate(db: Session = Depends(get_db)):
                 db.execute(text(f"ALTER TABLE grid_point_ranks RENAME COLUMN {old_name} TO point_metadata"))
                 db.commit()
                 logger.info(f"Column {old_name} renamed to point_metadata in grid_point_ranks.")
+            except Exception:
+                db.rollback()
+
+        # Check for average_rank and visibility_score in snapshots
+        snapshot_cols = [
+            ("average_rank", "FLOAT"),
+            ("visibility_score", "FLOAT")
+        ]
+        for col_name, col_type in snapshot_cols:
+            try:
+                db.execute(text(f"ALTER TABLE grid_rank_snapshots ADD COLUMN IF NOT EXISTS {col_name} {col_type}"))
+                db.commit()
             except Exception:
                 db.rollback()
 
