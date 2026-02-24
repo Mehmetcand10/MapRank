@@ -6,3 +6,4 @@ from .billing import Subscription, UsageLog
 from .review import Review, ReviewBase, ReplyDraftRequest, ReplyDraftResponse
 from .report import Report, ReportCreate
 from .grid_rank import GridPointOutput, GridRankSnapshot, GridRankHistory
+from .ai_expansion import SEOAuditOutput, CompetitorOutput, AIPredictionOutput, DescriptionRequest, DescriptionResponse

@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, users, tenants, billing, businesses, reviews, reports, alerts, grid
+from app.api.v1.endpoints import auth, users, tenants, billing, businesses, reviews, reports, alerts, grid, ai_expansion
 
 api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
@@ -11,3 +11,4 @@ api_router.include_router(reviews.router, prefix="/reviews", tags=["reviews"])
 api_router.include_router(grid.router, prefix="/grid", tags=["grid"])
 api_router.include_router(reports.router, prefix="/reports", tags=["reports"])
 api_router.include_router(alerts.router, prefix="/alerts", tags=["alerts"])
+api_router.include_router(ai_expansion.router, prefix="/ai", tags=["ai-expansion"])

@@ -23,6 +23,9 @@ class Business(Base):
     rankings = relationship("Ranking", back_populates="business", cascade="all, delete-orphan")
     alerts = relationship("Alert", back_populates="business", cascade="all, delete-orphan")
     grid_snapshots = relationship("GridRankSnapshot", back_populates="business", cascade="all, delete-orphan")
+    competitors = relationship("Competitor", back_populates="business", cascade="all, delete-orphan")
+    seo_audits = relationship("SEOAudit", back_populates="business", cascade="all, delete-orphan")
+    predictions = relationship("AIPrediction", back_populates="business", cascade="all, delete-orphan")
     
     # Profile Vitals (Cached/Persisted for history)
     health_score = Column(Float, default=0.0)
