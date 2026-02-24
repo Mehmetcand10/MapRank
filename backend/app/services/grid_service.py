@@ -77,7 +77,7 @@ class GridService:
                     lng=lng,
                     rank=rank,
                     is_competitor_winner=winner if rank != 1 else None,
-                    metadata={"search_results_count": len(nearby) if nearby else 0}
+                    point_metadata={"search_results_count": len(nearby) if nearby else 0}
                 )
                 db.add(point)
                 

@@ -8,7 +8,7 @@ class GridPointOutput(BaseModel):
     lng: float
     rank: Optional[int]
     is_competitor_winner: Optional[str]
-    metadata: Optional[dict]
+    point_metadata: Optional[dict]
 
 class GridRankBase(BaseModel):
     keyword: str
