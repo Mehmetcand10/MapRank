@@ -47,7 +47,7 @@ async def add_cors_headers(request: Request, call_next):
     return response
 
 # Global Version Control
-APP_VERSION = "v29-STABLE"
+APP_VERSION = "v30-STABLE"
 
 @app.get("/")
 def root():
@@ -124,6 +124,14 @@ def health_migrate(db: Session = Depends(get_db)):
             except Exception as e:
                 logger.warning(f"Column {col_name} error: {str(e)}")
                 db.rollback()
+
+        # 3. Fix GridRank metadata rename (fail-safe migration)
+        try:
+            db.execute(text("ALTER TABLE grid_point_ranks RENAME COLUMN metadata_json TO metadata"))
+            db.commit()
+            logger.info("Column metadata_json renamed to metadata in grid_point_ranks.")
+        except Exception:
+            db.rollback()
 
         return {
             "status": "ok", 

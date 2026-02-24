@@ -31,6 +31,6 @@ class GridPointRank(Base):
     lng = Column(Float, nullable=False)
     rank = Column(Integer, nullable=True) # 0 or null if not in top 20
     is_competitor_winner = Column(String, nullable=True) # Name of the winner if not our business
-    metadata_json = Column(JSON, nullable=True) # Extra info like competitor ratings at this spot
+    metadata = Column(JSON, nullable=True) # Extra info like competitor ratings at this spot
 
     snapshot = relationship("GridRankSnapshot", back_populates="points")
