@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List, Any
+from typing import List, Any, Dict
 from app import schemas, models
 from app.api import deps, auth_deps
 from app.services.ai_expansion_service import seo_audit_service, competitor_service
