@@ -110,6 +110,13 @@ function AnalyzeContent() {
     const [searchResults, setSearchResults] = useState<BusinessSearchResult[]>([])
     const [searchLoading, setSearchLoading] = useState(false)
 
+    // AI States
+    const [strategyAnalysis, setStrategyAnalysis] = useState<any>(null)
+    const [strategyLoading, setStrategyLoading] = useState(false)
+    const [benchmarks, setBenchmarks] = useState<any>(null)
+    const [benchLoading, setBenchLoading] = useState(false)
+    const [discovering, setDiscovering] = useState(false)
+
     const handleDownloadPDF = () => {
         if (!html2pdf || !data) return
 
@@ -218,6 +225,54 @@ function AnalyzeContent() {
             })
         } finally {
             setSaving(false)
+        }
+    }
+
+    const handleDiscoverCompetitors = async () => {
+        if (!internalId) return
+        setDiscovering(true)
+        try {
+            const res = await api.post(`/ai/${internalId}/discover-competitors`)
+            toast({ title: "Keşif Tamamlandı", description: "Rakipler otomatik olarak bulundu ve takibe alındı." })
+            // Refresh analysis to show new competitors
+            const response = await api.get<AnalysisResult>(`/businesses/analyze?place_id=${encodeURIComponent(placeId!)}`)
+            setData(response.data)
+        } catch (err) {
+            toast({ title: "Hata", description: "Rakip keşfi şu an başarısız.", variant: "destructive" })
+        } finally {
+            setDiscovering(false)
+        }
+    }
+
+    const handleRunStrategyAnalysis = async () => {
+        if (!internalId) return
+        setStrategyLoading(true)
+        try {
+            const res = await api.get(`/ai/${internalId}/strategy-analysis`)
+            setStrategyAnalysis(res.data)
+            toast({ title: "Analiz Hazır", description: "AI Rakip Strateji Analizi tamamlandı." })
+        } catch (err) {
+            toast({ title: "Hata", description: "Stratejik analiz motoru meşgul.", variant: "destructive" })
+        } finally {
+            setStrategyLoading(false)
+        }
+    }
+
+    const handleFetchBenchmarks = async () => {
+        if (!data?.business_types?.[0]) return
+        setBenchLoading(true)
+        try {
+            const res = await api.get("/ai/benchmarks", {
+                params: {
+                    category: data.business_types[0],
+                    location: data.formatted_address?.split(',').pop()?.trim() || "Ankara"
+                }
+            })
+            setBenchmarks(res.data)
+        } catch (err) {
+            console.error("Benchmark fetch failed", err)
+        } finally {
+            setBenchLoading(false)
         }
     }
 
@@ -646,12 +701,25 @@ function AnalyzeContent() {
 
                 {/* Automatic Competitor Discovery */}
                 <MotionCard delay={0.5} className="lg:col-span-2">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Icons.store className="h-5 w-5 text-blue-600" />
-                            Otomatik Rakip Keşfi
-                        </CardTitle>
-                        <CardDescription>Bölgenizdeki en güçlü 5 rakip ve performans kıyaslaması.</CardDescription>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle className="flex items-center gap-2">
+                                <Icons.store className="h-5 w-5 text-blue-600" />
+                                Rakip Analizi & Keşfi
+                            </CardTitle>
+                            <CardDescription>Bölgenizdeki en güçlü rakipler ve performans kıyaslaması.</CardDescription>
+                        </div>
+                        {internalId && (
+                            <Button
+                                onClick={handleDiscoverCompetitors}
+                                disabled={discovering}
+                                variant="outline"
+                                className="rounded-xl border-blue-100 text-blue-600 font-bold text-xs uppercase"
+                            >
+                                {discovering ? <Icons.spinner className="h-4 w-4 animate-spin mr-2" /> : <Icons.search className="h-4 w-4 mr-2" />}
+                                Otomatik Keşfet
+                            </Button>
+                        )}
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
@@ -680,10 +748,103 @@ function AnalyzeContent() {
                                     </div>
                                 </div>
                             ))}
+
+                            {!data.competitors?.length && (
+                                <div className="text-center py-10 space-y-4">
+                                    <Icons.store className="h-12 w-12 text-slate-200 mx-auto" />
+                                    <p className="text-sm text-slate-500 font-medium">Henüz rakip verisi bulunamadı.</p>
+                                    {internalId && (
+                                        <Button onClick={handleDiscoverCompetitors} className="bg-blue-600 text-white rounded-xl">
+                                            Rakipleri Şimdi Bul
+                                        </Button>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </MotionCard>
             </div>
+
+            {/* AI Strategy Analysis Section */}
+            {internalId && (
+                <div className="space-y-8 mt-12">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-4">
+                        <div className="space-y-1">
+                            <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">AI Stratejik Zeka Merkezi</h3>
+                            <p className="text-sm text-slate-500 font-medium">Rakiplerinizin zayıf noktalarını ve sizin için en hızlı büyüme yollarını analiz edin.</p>
+                        </div>
+                        <Button
+                            onClick={handleRunStrategyAnalysis}
+                            disabled={strategyLoading}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-[1.25rem] h-14 px-8 font-black uppercase text-xs tracking-widest shadow-xl shadow-indigo-100 dark:shadow-indigo-950/20"
+                        >
+                            {strategyLoading ? <Icons.spinner className="h-5 w-5 animate-spin mr-2" /> : <Icons.bot className="h-5 w-5 mr-2" />}
+                            Stratejik Analiz Al
+                        </Button>
+                    </div>
+
+                    {!strategyAnalysis ? (
+                        <div className="grid md:grid-cols-2 gap-8 px-4">
+                            <div className="p-10 bg-white dark:bg-slate-900 rounded-[3rem] border border-dashed border-slate-200 dark:border-slate-800 text-center space-y-6">
+                                <div className="h-16 w-16 bg-indigo-50 dark:bg-indigo-500/10 rounded-3xl flex items-center justify-center mx-auto text-indigo-600">
+                                    <Icons.shield className="h-8 w-8" />
+                                </div>
+                                <div className="space-y-2">
+                                    <h4 className="font-black text-slate-900 dark:text-white">Rakip Defans Analizi</h4>
+                                    <p className="text-xs text-slate-500 leading-relaxed italic">Rakiplerinizin hangi hizmetlerde yetersiz kaldığını ve bu boşluğu nasıl doldurabileceğinizi gösteren detaylı rapor.</p>
+                                </div>
+                            </div>
+                            <div className="p-10 bg-white dark:bg-slate-900 rounded-[3rem] border border-dashed border-slate-200 dark:border-slate-800 text-center space-y-6">
+                                <div className="h-16 w-16 bg-emerald-50 dark:bg-emerald-500/10 rounded-3xl flex items-center justify-center mx-auto text-emerald-600">
+                                    <Icons.trending className="h-8 w-8" />
+                                </div>
+                                <div className="space-y-2">
+                                    <h4 className="font-black text-slate-900 dark:text-white">Pazar Dominasyon Planı</h4>
+                                    <p className="text-xs text-slate-500 leading-relaxed italic">Önümüzdeki 90 gün içinde sıralamanızı 1. sıraya taşıyacak adım adım aksiyon planı.</p>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="grid md:grid-cols-2 gap-8">
+                            <MotionCard className="border-none shadow-2xl bg-indigo-900 text-white rounded-[3rem] p-10 space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <Icons.shield className="h-6 w-6 text-indigo-400" />
+                                    <h4 className="text-lg font-black uppercase tracking-widest">Temel Analiz</h4>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="p-5 bg-white/5 rounded-2xl border border-white/10">
+                                        <p className="text-[10px] uppercase font-black text-indigo-400 mb-2">Özet Analiz</p>
+                                        <p className="text-sm font-medium leading-relaxed italic">"{strategyAnalysis?.overall_insight || 'Stratejik özet hazırlanıyor...'}"</p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="flex flex-col gap-4">
+                                            <div className="p-4 bg-white/5 rounded-2xl">
+                                                <p className="text-[10px] uppercase font-black text-emerald-400 mb-1">Stratejik İçgörü</p>
+                                                <p className="text-sm font-medium leading-relaxed italic text-indigo-100/70">{strategyAnalysis?.overall_insight}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </MotionCard>
+
+                            <MotionCard className="border-none shadow-2xl bg-white dark:bg-slate-950 rounded-[3rem] p-10 space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <Icons.activity className="h-6 w-6 text-indigo-600" />
+                                    <h4 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-widest">Önerilen Aksiyonlar</h4>
+                                </div>
+                                <div className="space-y-3">
+                                    {(strategyAnalysis?.action_plan || []).map((action: string, i: number) => (
+                                        <div key={i} className="flex gap-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 items-center">
+                                            <span className="h-6 w-6 rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-900 flex items-center justify-center text-[10px] font-black shrink-0">{i + 1}</span>
+                                            <p className="text-sm font-bold text-slate-700 dark:text-slate-300">{action}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </MotionCard>
+                        </div>
+                    )}
+                </div>
+            )}
 
             <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
                 {data.vitals && <ProfileVitalsWidget vitals={data.vitals} />}

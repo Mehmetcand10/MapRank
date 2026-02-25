@@ -32,6 +32,7 @@ function ReviewsContent() {
     const [aiDraft, setAiDraft] = useState("")
     const [draftLoading, setDraftLoading] = useState(false)
     const [tone, setTone] = useState("professional")
+    const [sentiments, setSentiments] = useState<Record<number, any>>({})
 
     useEffect(() => {
         if (!businessId) {
@@ -41,13 +42,11 @@ function ReviewsContent() {
 
         const fetchData = async () => {
             try {
-                // 1. Get business details
                 const bizRes = await api.get("/businesses")
                 const biz = bizRes.data.find((b: any) => b.id.toString() === businessId)
                 if (!biz) return
                 setBusinessName(biz.name)
 
-                // 2. Get reviews
                 const reviewsRes = await api.get(`/reviews?place_id=${biz.google_place_id}`)
                 setReviews(reviewsRes.data)
             } catch (err) {
@@ -60,22 +59,27 @@ function ReviewsContent() {
         fetchData()
     }, [businessId])
 
-    const generateDraft = async (review: Review) => {
+    const generateDraft = async (review: Review, index: number) => {
         setSelectedReview(review)
         setDraftLoading(true)
         setAiDraft("")
         try {
-            const res = await api.post("/reviews/draft", {
+            const res = await api.post("/ai/generate-response", {
                 review_text: review.text,
                 rating: review.rating,
                 author_name: review.author_name,
                 tone: tone
             })
             setAiDraft(res.data.draft)
+
+            if (!sentiments[index]) {
+                const sentRes = await api.post(`/ai/analyze-sentiment?review_text=${encodeURIComponent(review.text)}`)
+                setSentiments(prev => ({ ...prev, [index]: sentRes.data }))
+            }
         } catch (err) {
             toast({
                 title: "Hata",
-                description: "Yapay zeka taslağı oluşturulamadı.",
+                description: "Yapay zeka asistanı şu an yanıt veremiyor.",
                 variant: "destructive"
             })
         } finally {
@@ -150,7 +154,7 @@ function ReviewsContent() {
                         <MotionCard key={idx} className={cn(
                             "border-none shadow-sm hover:shadow-md transition-all cursor-pointer group bg-white dark:bg-slate-900",
                             selectedReview === review && "ring-2 ring-indigo-600 shadow-xl"
-                        )} onClick={() => generateDraft(review)}>
+                        )} onClick={() => generateDraft(review, idx)}>
                             <CardContent className="p-6">
                                 <div className="flex gap-4">
                                     <div className="h-12 w-12 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden">
@@ -173,6 +177,18 @@ function ReviewsContent() {
                                         <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed italic">
                                             "{review.text || 'Metinsiz yorum'}"
                                         </p>
+                                        {sentiments[idx] && (
+                                            <div className="pt-2 flex items-center gap-2">
+                                                <Badge className={cn(
+                                                    "text-[9px] font-black uppercase border-none py-0.5 px-2 rounded-lg",
+                                                    sentiments[idx].sentiment === 'positive' ? "bg-emerald-500/10 text-emerald-600" :
+                                                        sentiments[idx].sentiment === 'negative' ? "bg-red-500/10 text-red-600" : "bg-slate-500/10 text-slate-500"
+                                                )}>
+                                                    {sentiments[idx].sentiment === 'positive' ? 'Pozitif Deneyim' :
+                                                        sentiments[idx].sentiment === 'negative' ? 'Dikkat Edilmeli' : 'Nötr Geri Bildirim'}
+                                                </Badge>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </CardContent>

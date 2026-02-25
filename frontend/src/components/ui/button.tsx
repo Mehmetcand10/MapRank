@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 // Removed unused imports causing errors
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'link';
     size?: 'sm' | 'md' | 'lg' | 'icon';
     isLoading?: boolean;
 }
@@ -19,6 +19,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             secondary: "bg-white text-gray-900 hover:bg-gray-50 border border-gray-200 shadow-sm",
             outline: "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground",
             ghost: "hover:bg-gray-100 text-gray-700",
+            link: "text-indigo-600 underline-offset-4 hover:underline",
         };
 
         const sizes = {

@@ -10,8 +10,7 @@ import { MotionCard } from "@/components/ui/motion-card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/use-toast"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
-import { cn } from "@/lib/utils"
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 
 interface Keyword {
     id: string
@@ -25,6 +24,18 @@ interface Ranking {
     rank_position: number
 }
 
+interface SEOAudit {
+    overall_score: number
+    audit_data: any
+    ai_recommendations: Array<{
+        priority: string
+        category: string
+        title: string
+        description: string
+        est_impact: string
+    }>
+}
+
 function SEOContent() {
     const searchParams = useSearchParams()
     const router = useRouter()
@@ -35,6 +46,15 @@ function SEOContent() {
     const [businessName, setBusinessName] = useState("")
     const [newKeyword, setNewKeyword] = useState("")
     const [location, setLocation] = useState("Mamak, Ankara")
+
+    // AI States
+    const [audit, setAudit] = useState<SEOAudit | null>(null)
+    const [auditLoading, setAuditLoading] = useState(false)
+    const [description, setDescription] = useState("")
+    const [descLoading, setDescLoading] = useState(false)
+    const [prediction, setPrediction] = useState<any>(null)
+    const [predictLoading, setPredictLoading] = useState(false)
+    const [selectedPredictKw, setSelectedPredictKw] = useState("")
 
     useEffect(() => {
         if (!businessId) {
@@ -91,6 +111,60 @@ function SEOContent() {
         }
     }
 
+    const handleRunAudit = async () => {
+        setAuditLoading(true)
+        try {
+            const res = await api.post(`/ai/${businessId}/seo-audit`)
+            setAudit(res.data)
+            toast({ title: "Analiz Hazır", description: "Local SEO denetimi tamamlandı." })
+        } catch (err) {
+            toast({ title: "Analiz Başarısız", description: "Denetim motoru şu an meşgul.", variant: "destructive" })
+        } finally {
+            setAuditLoading(false)
+        }
+    }
+
+    const handleGenerateDescription = async () => {
+        setDescLoading(true)
+        try {
+            const res = await api.post("/ai/generate-description", {
+                category: "Local Business",
+                location: location,
+                keywords: keywords.map(k => k.term),
+                tone: "professional"
+            })
+            setDescription(res.data.description)
+            toast({ title: "Açıklama Yazıldı", description: "Yapay zeka profil açıklamanızı hazırladı." })
+        } catch (err) {
+            toast({ title: "Hata", description: "Açıklama oluşturulamadı.", variant: "destructive" })
+        } finally {
+            setDescLoading(false)
+        }
+    }
+
+    const handlePredict = async () => {
+        if (!selectedPredictKw) {
+            toast({ title: "Uyarı", description: "Simülasyon için bir kelime seçmelisiniz." })
+            return
+        }
+        setPredictLoading(true)
+        try {
+            const res = await api.post(`/ai/${businessId}/predict`, {
+                keyword: selectedPredictKw,
+                scenario: {
+                    new_photos: 10,
+                    new_reviews: 5,
+                    optimized_description: true
+                }
+            })
+            setPrediction(res.data)
+        } catch (err) {
+            toast({ title: "Hata", description: "Simülasyon motoru yanıt vermedi.", variant: "destructive" })
+        } finally {
+            setPredictLoading(false)
+        }
+    }
+
     if (loading) {
         return (
             <div className="flex h-[80vh] flex-col items-center justify-center gap-4">
@@ -105,7 +179,7 @@ function SEOContent() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => router.back()} className="rounded-full -ml-2 text-slate-500">
+                        <Button variant="ghost" onClick={() => router.back()} className="rounded-full -ml-2 text-slate-500 p-2">
                             <Icons.chevronLeft className="h-4 w-4" />
                         </Button>
                         <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white uppercase">Lokal SEO Takip Merkezi</h1>
@@ -165,7 +239,7 @@ function SEOContent() {
                     </CardContent>
                 </MotionCard>
 
-                {/* Keyword Management */}
+                {/* Keyword Management Side */}
                 <div className="lg:col-span-4 space-y-6">
                     <MotionCard className="border-none shadow-xl bg-slate-900 text-white rounded-[2.5rem]">
                         <CardHeader className="p-8">
@@ -207,22 +281,173 @@ function SEOContent() {
                                 </div>
                                 <Button
                                     variant="ghost"
-                                    size="sm"
                                     onClick={() => handleDeleteKeyword(kw.id)}
-                                    className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                                    className="opacity-0 group-hover:opacity-100 text-red-400 p-2 hover:bg-red-50 rounded-xl"
                                 >
                                     <Icons.minus className="h-4 w-4" />
                                 </Button>
                             </div>
                         ))}
-
-                        {keywords.length === 0 && (
-                            <div className="p-8 text-center bg-slate-50 dark:bg-slate-800/20 rounded-2xl border border-dashed border-slate-200">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase">Henüz kelime eklenmedi.</p>
-                            </div>
-                        )}
                     </div>
+
+                    {/* AI SEO Audit Tool */}
+                    <MotionCard className="border-none shadow-xl bg-white dark:bg-slate-900 rounded-[2.5rem] overflow-hidden">
+                        <CardHeader className="p-8 pb-4">
+                            <CardTitle className="text-sm font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <Icons.checkCircle className="h-4 w-4 text-emerald-500" />
+                                AI SEO Denetimi
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-8 pt-0 space-y-4">
+                            {!audit ? (
+                                <div className="text-center space-y-4">
+                                    <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-dashed border-slate-200 text-left">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Nasıl Çalışır?</p>
+                                        <p className="text-xs font-medium text-slate-500 leading-relaxed">Profilinizin Google Maps sıralama faktörlerine uyumunu saniyeler içinde analiz eder.</p>
+                                    </div>
+                                    <Button onClick={handleRunAudit} disabled={auditLoading} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl h-12 font-bold uppercase text-xs">
+                                        {auditLoading ? <Icons.spinner className="h-4 w-4 animate-spin mr-2" /> : <Icons.activity className="h-4 w-4 mr-2" />}
+                                        Analizi Başlat
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="space-y-4 animate-in fade-in zoom-in-95 duration-500">
+                                    <div className="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-800">
+                                        <span className="text-xs font-black text-emerald-700 dark:text-emerald-400 uppercase">Sağlık Skoru</span>
+                                        <span className="text-2xl font-black text-emerald-600">%{audit.overall_score ?? 0}</span>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase px-2 tracking-widest">Kritik Öneriler</p>
+                                        <div className="space-y-2">
+                                            {(audit.ai_recommendations || []).slice(0, 3).map((rec: any, i: number) => (
+                                                <div key={i} className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-800 text-[11px] font-medium text-slate-700 dark:text-slate-300 shadow-sm">
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <span className="font-black text-indigo-600 uppercase text-[9px]">{rec.category}</span>
+                                                        <Badge className="text-[8px] bg-indigo-50 text-indigo-600 border-none">{rec.priority}</Badge>
+                                                    </div>
+                                                    <p className="font-bold mb-1">{rec.title}</p>
+                                                    <p className="text-[10px] opacity-70 italic">{rec.description}</p>
+                                                    <div className="mt-2 pt-2 border-t border-slate-50 dark:border-slate-700 flex justify-between items-center">
+                                                        <span className="text-[9px] font-bold text-emerald-600">{rec.est_impact}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <Button variant="outline" onClick={() => setAudit(null)} className="w-full rounded-xl text-[10px] uppercase font-bold text-slate-400 border-slate-100 dark:border-slate-800">Yeniden Tara</Button>
+                                </div>
+                            )}
+                        </CardContent>
+                    </MotionCard>
+
+                    {/* AI Description Generator */}
+                    <MotionCard className="border-none shadow-xl bg-indigo-950 text-white rounded-[2.5rem] overflow-hidden relative">
+                        <div className="absolute top-0 right-0 p-6 opacity-10">
+                            <Icons.bot className="h-20 w-20" />
+                        </div>
+                        <CardHeader className="p-8">
+                            <CardTitle className="text-sm font-black uppercase tracking-widest text-indigo-400">AI Profil Yazarı</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-8 pt-0 space-y-4">
+                            {!description ? (
+                                <div className="space-y-4">
+                                    <p className="text-xs text-indigo-200/60 font-medium">Sıralama kazandıran, anahtar kelime odaklı bir açıklama üretin.</p>
+                                    <Button onClick={handleGenerateDescription} disabled={descLoading} className="w-full bg-white text-indigo-950 hover:bg-white/90 rounded-2xl h-12 font-black uppercase text-xs shadow-lg shadow-indigo-950/20">
+                                        {descLoading ? <Icons.spinner className="h-4 w-4 animate-spin mr-2" /> : <Icons.bot className="h-4 w-4 mr-2" />}
+                                        Yapay Zeka Yazsın
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="space-y-3 animate-in fade-in duration-500">
+                                    <textarea
+                                        readOnly
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-xs font-medium leading-relaxed min-h-[140px] text-indigo-100 outline-none"
+                                        value={description}
+                                    />
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Button
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(description)
+                                                toast({ title: "Kopyalandı", description: "Panoya kopyalandı." })
+                                            }}
+                                            className="bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl h-10 text-[10px] uppercase font-bold"
+                                        >
+                                            Kopyala
+                                        </Button>
+                                        <Button variant="ghost" onClick={() => setDescription("")} className="text-indigo-400 hover:text-white h-10 text-[10px] uppercase font-bold">Yeni Taslak</Button>
+                                    </div>
+                                </div>
+                            )}
+                        </CardContent>
+                    </MotionCard>
                 </div>
+            </div>
+
+            {/* AI Ranking Prediction Simulation */}
+            <div className="pt-8 border-t border-slate-100 dark:border-slate-800">
+                <MotionCard className="border-none shadow-2xl bg-slate-900 text-white rounded-[3rem] overflow-hidden">
+                    <div className="grid md:grid-cols-12">
+                        <div className="md:col-span-4 p-10 bg-gradient-to-br from-indigo-600 to-indigo-800 flex flex-col justify-center">
+                            <Icons.trending className="h-12 w-12 text-white/50 mb-6" />
+                            <h2 className="text-3xl font-black uppercase tracking-tighter leading-tight mb-4 text-white">Sıralama<br />Simülatörü</h2>
+                            <p className="text-indigo-100/80 text-sm font-medium leading-relaxed">Aksiyonlarınızın gelecekteki etkisini görün.</p>
+                        </div>
+                        <div className="md:col-span-8 p-10 space-y-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black uppercase text-indigo-400 tracking-widest pl-1">Hedef Kelime</label>
+                                    <select
+                                        className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-5 text-sm font-bold appearance-none outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer hover:bg-white/10 transition-all text-white"
+                                        value={selectedPredictKw}
+                                        onChange={(e) => setSelectedPredictKw(e.target.value)}
+                                    >
+                                        <option value="" className="bg-slate-900">Seçiniz...</option>
+                                        {keywords.map(k => <option key={k.id} value={k.term} className="bg-slate-900">{k.term}</option>)}
+                                    </select>
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black uppercase text-indigo-400 tracking-widest pl-1">Aksiyon Paketi</label>
+                                    <div className="flex flex-wrap gap-2 pt-1">
+                                        <Badge className="bg-white/10 text-white border-none py-2 px-4 rounded-xl text-[10px] font-bold">+10 Fotoğraf</Badge>
+                                        <Badge className="bg-white/10 text-white border-none py-2 px-4 rounded-xl text-[10px] font-bold">+5 Yeni Yorum</Badge>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {!prediction ? (
+                                <Button
+                                    onClick={handlePredict}
+                                    disabled={predictLoading || !selectedPredictKw}
+                                    className="w-full bg-indigo-500 hover:bg-indigo-400 text-white h-16 rounded-2xl font-black uppercase text-sm tracking-widest shadow-xl shadow-indigo-900/50 transition-all active:scale-95"
+                                >
+                                    {predictLoading ? <Icons.spinner className="h-5 w-5 animate-spin" /> : "Geleceği Simüle Et"}
+                                </Button>
+                            ) : (
+                                <div className="animate-in slide-in-from-bottom-6 duration-700">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="p-8 bg-indigo-500/10 rounded-[2.5rem] border border-indigo-500/20 text-center space-y-1">
+                                            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Tahmin Edilen Skor</p>
+                                            <p className="text-5xl font-black text-indigo-100 tracking-tighter">%{prediction.predicted_score}</p>
+                                        </div>
+                                        <div className="p-8 bg-emerald-500/10 rounded-[2.5rem] border border-emerald-500/20 text-center space-y-1">
+                                            <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Performans Artışı</p>
+                                            <p className="text-5xl font-black text-emerald-100 tracking-tighter">+{prediction.improvement_factor}%</p>
+                                        </div>
+                                    </div>
+                                    <div className="mt-6 p-8 bg-white/5 rounded-[2.5rem] border border-white/5 relative overflow-hidden group">
+                                        <div className="absolute top-0 right-0 p-6 opacity-5">
+                                            <Icons.activity className="h-12 w-12" />
+                                        </div>
+                                        <p className="text-sm font-medium text-slate-300 leading-relaxed italic relative z-10">
+                                            "Analiz: Seçtiğiniz aksiyonlar sıralamada pazar liderliğine %{prediction.improvement_factor} daha yaklaştırır."
+                                        </p>
+                                        <Button variant="link" onClick={() => setPrediction(null)} className="mt-4 p-0 h-auto text-[10px] font-black uppercase text-indigo-400 tracking-widest hover:text-white transition-colors">Senaryoyu Değiştir</Button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </MotionCard>
             </div>
         </div>
     )

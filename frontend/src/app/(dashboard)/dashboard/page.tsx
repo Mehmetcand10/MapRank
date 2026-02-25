@@ -84,331 +84,251 @@ export default function DashboardPage() {
             : 0
 
     return (
-        <div className="space-y-6 p-4 md:p-8 animate-in fade-in duration-500">
-            {/* Enterprise Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-                <div className="space-y-1">
-                    <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white">Genel Bakış</h1>
-                    <p className="text-sm md:text-base text-slate-500 font-medium text-balance">İşletmelerinizin dijital performans merkezi.</p>
+        <div className="space-y-8 animate-in fade-in duration-700">
+            {/* Command Center Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start gap-6">
+                <div className="space-y-2">
+                    <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-slate-950 dark:text-white uppercase">Komuta Merkezi</h1>
+                    <p className="text-sm md:text-base text-slate-500 font-bold uppercase tracking-widest opacity-70">MapRank Intelligence Portal</p>
                 </div>
-                <div className="w-full md:w-auto">
-                    <Button onClick={() => router.push("/business/analyze")} className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-2xl md:rounded-full px-6 py-6 md:py-2 shadow-lg shadow-blue-200 transition-all active:scale-95">
-                        <Icons.plus className="mr-2 h-4 w-4" />
-                        Yeni İşletme Analiz Et
+                <Button
+                    onClick={() => router.push("/business/analyze")}
+                    className="w-full md:w-auto h-14 md:h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl md:rounded-full px-8 shadow-2xl shadow-indigo-200 dark:shadow-none transition-all active:scale-95 font-black uppercase text-xs tracking-widest"
+                >
+                    <Icons.plus className="mr-2 h-5 w-5" />
+                    Yeni Analiz Başlat
+                </Button>
+            </div>
+
+            {/* Quick Action Tiles - Premium Mobile First */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <QuickTile
+                    title="Grid Rank"
+                    desc="Isı Haritası"
+                    icon={Icons.map}
+                    href="/business/grid-rank"
+                    color="bg-indigo-600"
+                    textColor="text-white"
+                />
+                <QuickTile
+                    title="SEO Takibi"
+                    desc="Sıralama Zekası"
+                    icon={Icons.trending}
+                    href="/business/seo"
+                    color="bg-white dark:bg-slate-900"
+                    textColor="text-indigo-600 dark:text-indigo-400"
+                    border
+                />
+                <QuickTile
+                    title="Yorumlar"
+                    desc="AI Yanıt Merkezi"
+                    icon={Icons.messageSquare}
+                    href="/business/reviews"
+                    color="bg-white dark:bg-slate-900"
+                    textColor="text-emerald-600 dark:text-emerald-400"
+                    border
+                />
+                <QuickTile
+                    title="Enterprise"
+                    desc="Toplu Yönetim"
+                    icon={Icons.store}
+                    href="/franchise"
+                    color="bg-slate-950"
+                    textColor="text-white"
+                />
+            </div>
+
+            {/* Main Stats Area */}
+            <div className="grid gap-6 md:grid-cols-12">
+                <MotionCard className="md:col-span-8 bg-white dark:bg-slate-950 border-none shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden rounded-[2.5rem]">
+                    <CardHeader className="p-8 pb-0">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <CardTitle className="text-xl font-black uppercase tracking-tight">Performans Özeti</CardTitle>
+                                <CardDescription className="text-xs font-bold uppercase tracking-widest mt-1">Son 30 Günlük Veri Seti</CardDescription>
+                            </div>
+                            <Badge variant="outline" className="rounded-full px-4 py-1 border-indigo-100 dark:border-indigo-900 text-indigo-600 dark:text-indigo-400 font-black">CANLI</Badge>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-8 pt-6">
+                        <div className="h-[250px] w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={[{ n: 'Paz', s: 40 }, { n: 'Pzt', s: 45 }, { n: 'Sal', s: 42 }, { n: 'Çar', s: 55 }, { n: 'Per', s: 58 }, { n: 'Cum', s: 62 }, { n: 'Cmt', s: 65 }]}>
+                                    <defs>
+                                        <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                    <XAxis dataKey="n" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: '#94a3b8' }} dy={10} />
+                                    <YAxis hide />
+                                    <Tooltip
+                                        contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 50px rgba(0,0,0,0.1)', fontWeight: 'bold' }}
+                                    />
+                                    <Area type="monotone" dataKey="s" stroke="#6366f1" strokeWidth={4} fillOpacity={1} fill="url(#colorScore)" />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </CardContent>
+                </MotionCard>
+
+                <div className="md:col-span-4 space-y-6">
+                    <MotionCard className="bg-gradient-to-br from-indigo-600 to-indigo-900 border-none shadow-2xl rounded-[2.5rem] p-8 text-white relative overflow-hidden group">
+                        <Icons.logo className="absolute -bottom-10 -right-10 h-40 w-40 opacity-10 group-hover:rotate-12 transition-transform duration-700" />
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-200 mb-4 text-center">Average Portfolio Score</p>
+                        <div className="flex flex-col items-center justify-center space-y-2">
+                            <span className="text-7xl font-black tracking-tighter">{avgScore}</span>
+                            <Progress value={avgScore} className="h-2 w-full bg-white/20" />
+                            <p className="text-[10px] font-bold text-indigo-200 mt-2 uppercase">İşletme Sağlık Endeksi: Mükemmel</p>
+                        </div>
+                    </MotionCard>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <StatsBox title="İşletme" val={businesses.length} icon={Icons.store} color="text-blue-500" />
+                        <StatsBox title="Büyüme" val="+12%" icon={Icons.trending} color="text-emerald-500" />
+                    </div>
+                </div>
+            </div>
+
+            {/* Business List Section */}
+            <div className="space-y-6 pb-12">
+                <div className="flex items-center gap-4">
+                    <h2 className="text-xl font-black uppercase tracking-tight">Takip Edilen Yerler</h2>
+                    <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {businesses.map((biz) => (
+                        <PremiumBusinessCard key={biz.id} biz={biz} onDelete={handleDeleteBusiness} />
+                    ))}
+                    <button
+                        onClick={() => router.push("/business/analyze")}
+                        className="group flex flex-col items-center justify-center p-8 rounded-[2.5rem] border-4 border-dashed border-slate-200 dark:border-slate-800 hover:border-indigo-600 transition-all min-h-[220px]"
+                    >
+                        <div className="h-16 w-16 rounded-full bg-slate-100 dark:bg-slate-800 group-hover:bg-indigo-600 group-hover:text-white transition-all flex items-center justify-center mb-4">
+                            <Icons.plus className="h-8 w-8" />
+                        </div>
+                        <span className="font-black uppercase text-xs tracking-widest text-slate-400 group-hover:text-indigo-600">Yeni İşletme Ekle</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+function QuickTile({ title, desc, icon: Icon, href, color, textColor, border }: any) {
+    const router = useRouter()
+    return (
+        <button
+            onClick={() => router.push(href)}
+            className={cn(
+                "p-5 rounded-[2rem] flex flex-col items-start gap-4 transition-all hover:-translate-y-1 active:scale-95 text-left group",
+                color,
+                textColor,
+                border && "border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-100/50 dark:shadow-none"
+            )}
+        >
+            <div className={cn(
+                "p-3 rounded-2xl",
+                color.includes("white") || color.includes("slate-900") ? "bg-slate-50 dark:bg-slate-800" : "bg-white/20"
+            )}>
+                <Icon className="h-5 w-5" />
+            </div>
+            <div>
+                <p className="font-black text-sm uppercase tracking-tight leading-none mb-1">{title}</p>
+                <p className={cn("text-[9px] font-bold uppercase tracking-wider opacity-60", !textColor.includes("white") && "text-slate-400")}>{desc}</p>
+            </div>
+        </button>
+    )
+}
+
+function StatsBox({ title, val, icon: Icon, color }: any) {
+    return (
+        <div className="p-5 rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-lg shadow-slate-100/50 dark:shadow-none flex flex-col items-center text-center">
+            <Icon className={cn("h-5 w-5 mb-2", color)} />
+            <span className="text-xl font-black text-slate-900 dark:text-white leading-none mb-1">{val}</span>
+            <p className="text-[8px] font-black uppercase text-slate-400 tracking-widest">{title}</p>
+        </div>
+    )
+}
+
+function PremiumBusinessCard({ biz, onDelete }: { biz: Business, onDelete: (id: string, name: string) => void }) {
+    const router = useRouter()
+    return (
+        <MotionCard className="group glass-card rounded-[2.5rem] border-none shadow-xl hover:shadow-2xl transition-all overflow-hidden p-0">
+            <div className="p-6 space-y-4">
+                <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                        <h3 className="font-black text-slate-900 dark:text-white uppercase leading-tight tracking-tighter truncate max-w-[150px]">{biz.name}</h3>
+                        <div className="flex items-center gap-2">
+                            <span className="flex items-center text-[10px] font-bold text-amber-500">
+                                <Icons.star className="h-3 w-3 mr-1 fill-amber-500" />
+                                {biz.total_rating}
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">• {biz.review_count} Yorum</span>
+                        </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                        <div className="px-3 py-1 rounded-full bg-indigo-600 text-white text-[10px] font-black">%{biz.latest_ranking?.score || 0}</div>
+                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">MAPRANK SKORU</span>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                    <Button
+                        size="sm"
+                        onClick={() => router.push(`/business/grid-rank?id=${biz.id}`)}
+                        className="rounded-2xl h-10 bg-slate-950 hover:bg-black text-white text-[10px] font-black uppercase tracking-widest"
+                    >
+                        Grid Rank
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => router.push(`/business/seo?id=${biz.id}`)}
+                        className="rounded-2xl h-10 text-[10px] font-black uppercase tracking-widest"
+                    >
+                        SEO
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => router.push(`/business/analyze?place_id=${biz.google_place_id}&name=${encodeURIComponent(biz.name)}`)}
+                        className="rounded-2xl h-10 text-[10px] font-black uppercase border-slate-200 dark:border-slate-800"
+                    >
+                        Analiz
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => router.push(`/business/reviews?id=${biz.id}`)}
+                        className="rounded-2xl h-10 text-[10px] font-black uppercase border-slate-200 dark:border-slate-800"
+                    >
+                        Yorumlar
                     </Button>
                 </div>
             </div>
 
-            {/* Premium Stats Grid */}
-            <div className="grid gap-6 md:grid-cols-3">
-                <MotionCard className="bg-gradient-to-br from-indigo-600 to-blue-700 text-white border-none shadow-xl relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
-                        <Icons.activity className="h-24 w-24" />
-                    </div>
-                    <CardHeader>
-                        <CardTitle className="text-white/80 text-xs font-bold uppercase tracking-widest">Global MapRank Skoru</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-5xl font-black">{avgScore}</span>
-                            <span className="text-lg font-bold text-white/60">/ 100</span>
-                        </div>
-                        <Progress value={avgScore} className="h-2 bg-white/20" />
-                        <p className="text-xs text-indigo-100 font-medium italic">Tüm portföyünüzün ağırlıklı başarı ortalaması.</p>
-                    </CardContent>
-                </MotionCard>
-
-                <SmallStatCard
-                    title="Takipteki İşletmeler"
-                    value={businesses.length}
-                    icon={Icons.store}
-                    color="text-emerald-500"
-                    bg="bg-emerald-50"
-                />
-                <SmallStatCard
-                    title="Haftalık Değişim"
-                    value="+4.2"
-                    unit="%"
-                    icon={Icons.trending}
-                    color="text-amber-500"
-                    bg="bg-amber-50"
-                />
+            <div className="flex items-center justify-between px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => router.push(`/business/consultant?id=${biz.id}`)}
+                    className="h-8 text-indigo-600 dark:text-indigo-400 font-black text-[9px] uppercase tracking-widest flex items-center gap-1 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 px-0"
+                >
+                    <Icons.bot className="h-3 w-3" />
+                    AI Strateji Odası
+                </Button>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onDelete(biz.id, biz.name)}
+                    className="h-8 w-8 p-0 text-slate-300 hover:text-red-500 rounded-full"
+                >
+                    <Icons.minus className="h-4 w-4" />
+                </Button>
             </div>
-
-            {/* TABS SEGMENTATION */}
-            <Tabs defaultValue="my-businesses" className="w-full">
-                <TabsList className="mb-8 p-1 bg-slate-100 dark:bg-slate-800/50 rounded-2xl w-full md:w-auto h-auto grid grid-cols-2 md:inline-flex">
-                    <TabsTrigger value="my-businesses" className="rounded-xl px-8 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 dark:data-[state=active]:text-white shadow-none data-[state=active]:shadow-xl transition-all font-bold">
-                        Benim İşletmelerim
-                    </TabsTrigger>
-                    <TabsTrigger value="competitors" className="rounded-xl px-8 py-3 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 dark:data-[state=active]:text-white shadow-none data-[state=active]:shadow-xl transition-all font-bold">
-                        Rakip İşletmeler
-                    </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="my-businesses" className="mt-0 space-y-6">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent" />
-                        <span className="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Sahibi Olduğunuz Yerler</span>
-                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent" />
-                    </div>
-                    {myBusinesses.length > 0 ? (
-                        <>
-                            <div className="hidden md:block overflow-hidden rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md shadow-xl">
-                                <BusinessTable
-                                    businesses={myBusinesses}
-                                    onDelete={handleDeleteBusiness}
-                                    isMyBusinessTab={true}
-                                />
-                            </div>
-                            <div className="md:hidden space-y-4">
-                                {myBusinesses.map((biz) => (
-                                    <MobileBusinessCard
-                                        key={biz.id}
-                                        biz={biz}
-                                        onDelete={handleDeleteBusiness}
-                                    />
-                                ))}
-                            </div>
-                        </>
-                    ) : (
-                        <EmptyState
-                            title="Henüz kendi işletmenizi eklemediniz."
-                            desc="Analiz sayfasından kendi işletmenizi işaretleyerek başlayın."
-                        />
-                    )}
-                </TabsContent>
-
-                <TabsContent value="competitors" className="mt-0 space-y-6">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent" />
-                        <span className="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Takipteki Rakipler</span>
-                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent" />
-                    </div>
-                    {competitors.length > 0 ? (
-                        <>
-                            <div className="hidden md:block overflow-hidden rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md shadow-xl">
-                                <BusinessTable
-                                    businesses={competitors}
-                                    onDelete={handleDeleteBusiness}
-                                    isMyBusinessTab={false}
-                                />
-                            </div>
-                            <div className="md:hidden space-y-4">
-                                {competitors.map((biz) => (
-                                    <MobileBusinessCard
-                                        key={biz.id}
-                                        biz={biz}
-                                        onDelete={handleDeleteBusiness}
-                                    />
-                                ))}
-                            </div>
-                        </>
-                    ) : (
-                        <EmptyState
-                            title="Takip edilen rakip bulunamadı."
-                            desc="Rakiplerinizi ekleyerek pazar payınızı karşılaştırın."
-                        />
-                    )}
-                </TabsContent>
-            </Tabs>
-        </div>
-    )
-}
-
-interface BusinessTableProps {
-    businesses: Business[]
-    onDelete: (id: string, name: string) => void
-    isMyBusinessTab?: boolean
-}
-
-function BusinessTable({ businesses, onDelete, isMyBusinessTab }: BusinessTableProps) {
-    const router = useRouter()
-    return (
-        <table className="w-full text-left">
-            <thead className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
-                <tr className="text-[10px] md:text-xs uppercase font-black text-slate-400 dark:text-slate-500 tracking-widest">
-                    <th className="px-6 py-5">İşletme Adı</th>
-                    <th className="px-6 py-5">MapRank Skoru</th>
-                    <th className="px-6 py-5">Yorum / Puan</th>
-                    <th className="px-6 py-5 text-right font-black">Aksiyonlar</th>
-                </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {businesses.map((biz) => (
-                    <tr key={biz.id} className="hover:bg-indigo-50/30 dark:hover:bg-indigo-500/5 transition-colors group">
-                        <td className="px-6 py-5">
-                            <div className="flex flex-col">
-                                <span className="font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{biz.name}</span>
-                                <span className="text-[10px] text-slate-400 font-medium truncate max-w-[200px]">{biz.google_place_id}</span>
-                            </div>
-                        </td>
-                        <td className="px-6 py-5">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-black text-sm shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20">
-                                    %{biz.latest_ranking?.score || 0}
-                                </div>
-                                <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                    <div className="h-full bg-indigo-600" style={{ width: `${biz.latest_ranking?.score || 0}%` }} />
-                                </div>
-                            </div>
-                        </td>
-                        <td className="px-6 py-5">
-                            <div className="flex flex-col">
-                                <div className="flex items-center gap-1">
-                                    <span className="font-bold text-slate-700 dark:text-slate-200">{biz.total_rating}</span>
-                                    <Icons.star className="h-3 w-3 text-amber-400 fill-amber-400" />
-                                </div>
-                                <span className="text-[10px] text-slate-400 font-bold uppercase">{biz.review_count} Yorum</span>
-                            </div>
-                        </td>
-                        <td className="px-6 py-5 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                                {isMyBusinessTab && (
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => router.push(`/business/consultant?id=${biz.id}`)}
-                                        className="rounded-xl h-9 bg-indigo-600 hover:bg-indigo-700 text-white border-none font-bold shadow-lg shadow-indigo-100 dark:shadow-none uppercase text-[10px]"
-                                    >
-                                        <Icons.bot className="h-3 w-3 mr-1" />
-                                        Strateji
-                                    </Button>
-                                )}
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => router.push(`/business/benchmarking?id=${biz.id}`)}
-                                    className="rounded-xl h-9 border-slate-200 dark:border-slate-800 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold uppercase text-[10px]"
-                                >
-                                    <Icons.trending className="h-3 w-3 mr-1" />
-                                    Kıyasla
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => router.push(`/business/reviews?id=${biz.id}`)}
-                                    className="rounded-xl h-9 border-indigo-200 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 font-bold uppercase text-[10px]"
-                                >
-                                    <Icons.messageSquare className="h-3 w-3 mr-1" />
-                                    Yorumlar
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => router.push(`/business/analyze?place_id=${biz.google_place_id}&name=${encodeURIComponent(biz.name)}`)}
-                                    className="rounded-xl h-9 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 font-bold uppercase text-[10px]"
-                                >
-                                    Analiz
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => router.push(`/business/seo?id=${biz.id}`)}
-                                    className="rounded-xl h-9 text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 font-bold uppercase text-[10px]"
-                                >
-                                    SEO
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => onDelete(biz.id, biz.name)}
-                                    className="rounded-xl h-9 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
-                                >
-                                    <Icons.minus className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    )
-}
-
-function MobileBusinessCard({ biz, onDelete }: { biz: Business, onDelete: (id: string, name: string) => void }) {
-    const router = useRouter()
-    return (
-        <MotionCard className="border-none shadow-lg overflow-hidden bg-white dark:bg-slate-900 group">
-            <CardContent className="p-0">
-                <div className="p-5 space-y-4">
-                    <div className="flex justify-between items-start">
-                        <div className="space-y-1">
-                            <h3 className="font-black text-slate-900 dark:text-white leading-tight uppercase tracking-tight">{biz.name}</h3>
-                            <div className="flex items-center gap-2">
-                                <Badge variant="secondary" className="bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 text-[10px] font-black border-none">
-                                    %{biz.latest_ranking?.score || 0} MapRank
-                                </Badge>
-                                <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase">
-                                    <span>{biz.total_rating}</span>
-                                    <Icons.star className="h-2 w-2 text-amber-400 fill-amber-400" />
-                                    <span>• {biz.review_count} Yorum</span>
-                                </div>
-                            </div>
-                        </div>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onDelete(biz.id, biz.name)}
-                            className="rounded-xl -mr-2 text-red-400 hover:text-red-600"
-                        >
-                            <Icons.minus className="h-4 w-4" />
-                        </Button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                        <Button
-                            variant="outline"
-                            className="w-full rounded-xl h-10 text-[10px] font-black uppercase border-slate-200 dark:border-slate-800 dark:text-slate-300"
-                            onClick={() => router.push(`/business/analyze?place_id=${biz.google_place_id}&name=${encodeURIComponent(biz.name)}`)}
-                        >
-                            Analiz
-                        </Button>
-                        <Button
-                            className="w-full rounded-xl h-10 text-[10px] font-black uppercase bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-100 dark:shadow-none"
-                            onClick={() => router.push(`/business/benchmarking?id=${biz.id}`)}
-                        >
-                            Kıyasla
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="w-full col-span-2 rounded-xl h-10 text-[10px] font-black uppercase border-indigo-200 dark:border-indigo-900/50 text-indigo-600"
-                            onClick={() => router.push(`/business/reviews?id=${biz.id}`)}
-                        >
-                            <Icons.messageSquare className="h-3 w-3 mr-2" />
-                            Yorum Yanıt Merkezi
-                        </Button>
-                    </div>
-                </div>
-            </CardContent>
         </MotionCard>
-    )
-}
-
-function SmallStatCard({ title, value, unit, icon: Icon, color, bg }: any) {
-    return (
-        <MotionCard className="border-none shadow-md bg-white dark:bg-slate-900/50">
-            <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{title}</p>
-                    <div className={`p-2 rounded-xl ${bg} dark:bg-slate-800`}>
-                        <Icon className={`h-4 w-4 ${color}`} />
-                    </div>
-                </div>
-                <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-black text-slate-900 dark:text-white leading-none">{value}</span>
-                    <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">{unit}</span>
-                </div>
-            </CardContent>
-        </MotionCard>
-    )
-}
-
-function EmptyState({ title, desc }: { title: string, desc: string }) {
-    return (
-        <div className="p-12 text-center bg-slate-50/50 dark:bg-slate-800/20 rounded-[2.5rem] border-2 border-dashed border-slate-200 dark:border-slate-800">
-            <Icons.activity className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
-            <h3 className="text-lg font-black text-slate-900 dark:text-white mb-1 uppercase tracking-tight">{title}</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{desc}</p>
-        </div>
     )
 }

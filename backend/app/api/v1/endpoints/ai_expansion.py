@@ -140,3 +140,43 @@ def get_industry_benchmarks(
     """
     from app.services.competitor_intel_service import competitor_intelligence_service
     return competitor_intelligence_service.get_benchmarks(category, location)
+
+@router.post("/generate-response", response_model=schemas.ReplyDraftResponse)
+def generate_review_response(
+    request: schemas.ReplyDraftRequest,
+    current_user: models.User = Depends(auth_deps.get_current_user)
+) -> Any:
+    """
+    Generates a high-quality AI response for a customer review.
+    """
+    from app.services.ai_response_service import ai_response_service
+    draft = ai_response_service.generate_response(
+        review_text=request.review_text,
+        rating=request.rating,
+        author_name=request.author_name,
+        tone=request.tone
+    )
+    return {"draft": draft}
+
+@router.post("/analyze-sentiment")
+def analyze_review_sentiment(
+    review_text: str = Query(...),
+    current_user: models.User = Depends(auth_deps.get_current_user)
+) -> Any:
+    """
+    Analyzes the sentiment of a review text.
+    """
+    # Simple logic for now, could be expanded to a service
+    positive_words = ["harika", "güzel", "lezzetli", "başarılı", "iyidi", "teşekkürler", "hızlı", "kalite"]
+    negative_words = ["kötü", "yavaş", "soğuk", "pahalı", "berbat", "hiç", "yazık", "rezalet"]
+    
+    text_lower = review_text.lower()
+    pos_count = sum(1 for w in positive_words if w in text_lower)
+    neg_count = sum(1 for w in negative_words if w in text_lower)
+    
+    if pos_count > neg_count:
+        return {"sentiment": "positive", "score": 0.8}
+    elif neg_count > pos_count:
+        return {"sentiment": "negative", "score": 0.2}
+    else:
+        return {"sentiment": "neutral", "score": 0.5}

@@ -38,24 +38,9 @@ export function MobileNav() {
             icon: Icons.search,
         },
         {
-            href: "/business/search",
-            label: "Keşfet / Ara",
-            icon: Icons.globe,
-        },
-        {
             href: "/business/grid-rank",
             label: "Grid Ranking (Heatmap)",
             icon: Icons.map,
-        },
-        {
-            href: "/business/seo",
-            label: "SEO Takibi",
-            icon: Icons.search,
-        },
-        {
-            href: "/business/reviews",
-            label: "Yorum Yanıt Merkezi",
-            icon: Icons.messageSquare,
         },
         {
             href: "/franchise",

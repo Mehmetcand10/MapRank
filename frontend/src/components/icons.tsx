@@ -29,7 +29,8 @@ import {
     LogOut,
     FileDown,
     FileText,
-    Map
+    Map,
+    Shield
 } from "lucide-react"
 
 export const Icons = {
@@ -63,5 +64,6 @@ export const Icons = {
     logOut: LogOut,
     fileDown: FileDown,
     fileText: FileText,
-    map: Map
+    map: Map,
+    shield: Shield
 }

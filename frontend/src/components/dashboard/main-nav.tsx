@@ -24,13 +24,7 @@ export function MainNav({
                 href="/business/analyze"
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
             >
-                Analiz
-            </Link>
-            <Link
-                href="/business/search"
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-                Keşfet / Ara
+                Pazar Analizi
             </Link>
             <Link
                 href="/business/grid-rank"
@@ -39,24 +33,13 @@ export function MainNav({
                 Grid Rank
             </Link>
             <Link
-                href="/billing"
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-                Faturalandırma
-            </Link>
-            <Link
-                href="/settings"
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-                Ayarlar
-            </Link>
-            <Link
                 href="/franchise"
                 className="text-sm font-black uppercase tracking-tight text-slate-500 transition-colors hover:text-indigo-600 flex items-center gap-1.5"
             >
                 <Icons.store className="h-4 w-4" />
                 Enterprise
             </Link>
+            <div className="flex-1" />
         </nav>
     )
 }
